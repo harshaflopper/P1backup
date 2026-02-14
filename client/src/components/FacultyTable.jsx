@@ -1,6 +1,6 @@
 import React from 'react';
 
-const FacultyTable = ({ faculty, onToggleStatus, onDelete }) => {
+const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
     if (faculty.length === 0) {
         return (
             <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-8 text-center">
@@ -63,6 +63,13 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete }) => {
                                         title="Delete Faculty"
                                     >
                                         <i className="bi bi-trash-fill text-lg"></i>
+                                    </button>
+                                    <button
+                                        onClick={() => onViewDuties(fac)}
+                                        className="text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-full hover:bg-indigo-50 ml-1"
+                                        title="View Duties"
+                                    >
+                                        <i className="bi bi-calendar-week-fill text-lg"></i>
                                     </button>
                                 </td>
                             </tr>

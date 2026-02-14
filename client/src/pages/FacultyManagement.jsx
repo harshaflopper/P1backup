@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import FacultyTable from '../components/FacultyTable';
 import AddFacultyModal from '../components/AddFacultyModal';
+import FacultyDutiesModal from '../components/FacultyDutiesModal';
+import { generateDepartmentReport } from '../utils/exportUtils';
 
 const FacultyManagement = () => {
     const [faculty, setFaculty] = useState([]);
@@ -9,6 +11,7 @@ const FacultyManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [selectedFacultyForDuties, setSelectedFacultyForDuties] = useState(null);
     const [departments, setDepartments] = useState([]);
 
     useEffect(() => {
@@ -28,6 +31,66 @@ const FacultyManagement = () => {
         } catch (err) {
             console.error('Error fetching faculty:', err);
             setLoading(false);
+        }
+    };
+
+    const handleExportAllocations = async () => {
+        try {
+            const res = await axios.get('/api/allocations');
+            const allocations = res.data;
+
+            if (allocations.length === 0) {
+                alert('No allocations found in database to export.');
+                return;
+            }
+
+            // Transform DB flat data to sessionData format for generator
+            // sessionData structure: { date: { session: { deputies: [], invigilators: [] } } }
+            const sessionData = {};
+
+            allocations.forEach(alloc => {
+                const { date, session } = alloc;
+                if (!sessionData[date]) sessionData[date] = {};
+                if (!sessionData[date][session]) sessionData[date][session] = { deputies: [], invigilators: [] };
+
+                const person = {
+                    name: alloc.facultyName,
+                    initials: alloc.initials,
+                    designation: alloc.designation,
+                    // Use populated department if available, otherwise 'Unknown'
+                    department: alloc.facultyId?.department || 'Unknown',
+                    dept: alloc.facultyId?.department || 'Unknown',
+                    room: alloc.room,
+                    role: alloc.role,
+                    // phone/mobile not strictly in DB allocationDetail but might be needed?
+                    // AllocationDetail doesn't store phone. Generator uses 'phone' or 'contact'.
+                    // We might miss phone numbers here unless we fetch full faculty details.
+                    // For now, let's leave phone empty or try to map if we have faculty list loaded.
+                };
+
+                // Try to find phone from loaded faculty list
+                const facultyDetails = faculty.find(f => f._id === alloc.facultyId?._id || f.initials === alloc.initials);
+                if (facultyDetails) {
+                    person.phone = facultyDetails.phone;
+                    person.contact = facultyDetails.phone;
+                    if (!person.department || person.department === 'Unknown') {
+                        person.department = facultyDetails.department;
+                        person.dept = facultyDetails.department;
+                    }
+                }
+
+                if (alloc.role === 'Deputy') {
+                    sessionData[date][session].deputies.push(person);
+                } else {
+                    sessionData[date][session].invigilators.push(person);
+                }
+            });
+
+            generateDepartmentReport(sessionData);
+
+        } catch (err) {
+            console.error('Export Error:', err);
+            alert('Failed to export allocations.');
         }
     };
 
@@ -81,13 +144,20 @@ const FacultyManagement = () => {
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Faculty Management</h1>
                     <p className="text-slate-500 text-sm mt-1">Manage faculty details, departments, and active status.</p>
                 </div>
-                <button
-                    className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl font-medium shadow-sm shadow-brand-600/20 active:scale-95 transition-all flex items-center gap-2"
-                    onClick={() => setShowModal(true)}
-                >
-                    <i className="bi bi-person-plus-fill"></i>
-                    Add Faculty
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleExportAllocations}
+                        className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                    >
+                        <i className="bi bi-file-earmark-spreadsheet"></i> Dept Report
+                    </button>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                    >
+                        <i className="bi bi-person-plus-fill"></i> Add Faculty
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
@@ -125,6 +195,7 @@ const FacultyManagement = () => {
                     faculty={filteredFaculty}
                     onToggleStatus={handleToggleStatus}
                     onDelete={handleDelete}
+                    onViewDuties={setSelectedFacultyForDuties}
                 />
             )}
 
@@ -133,6 +204,13 @@ const FacultyManagement = () => {
                     onClose={() => setShowModal(false)}
                     onSave={handleAddFaculty}
                     departments={departments}
+                />
+            )}
+
+            {selectedFacultyForDuties && (
+                <FacultyDutiesModal
+                    faculty={selectedFacultyForDuties}
+                    onClose={() => setSelectedFacultyForDuties(null)}
                 />
             )}
         </div>

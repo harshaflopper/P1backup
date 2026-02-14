@@ -9,7 +9,8 @@ const facultySchema = new mongoose.Schema({
     initials: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        unique: true
     },
     designation: {
         type: String,

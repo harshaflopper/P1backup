@@ -19,11 +19,30 @@ export const parseSessionData = (content) => {
 
         // Look for date information
         if (text.includes('Date of Exam')) {
-            const dateMatch = text.match(/Date of Exam\s*:\s*(.+?)(?:AM|PM|$)/i);
+            const dateMatch = text.match(/Date of Exam\s*:\s*(.+?)(?:\s+(?:AM|PM)|$)/i);
             if (dateMatch) {
                 const fullDateText = dateMatch[1].trim();
-                const dateParts = fullDateText.split(' ');
-                currentDate = dateParts[0];
+                // Try to handle DD-MM-YYYY or DD.MM.YYYY or DD/MM/YYYY
+                const cleanDate = fullDateText.replace(/[./]/g, '-');
+                const parts = cleanDate.split('-');
+
+                // Assumption: DD-MM-YYYY
+                if (parts.length === 3) {
+                    // Convert to YYYY-MM-DD
+                    currentDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else {
+                    // Fallback, just take raw or first part
+                    currentDate = parts[0];
+                }
+
+                // If it looks like "20 February 2025", we might need standard parse
+                if (isNaN(Date.parse(currentDate)) && parts.length !== 3) {
+                    // Try parsing natural language date
+                    const naturalDate = new Date(fullDateText);
+                    if (!isNaN(naturalDate.getTime())) {
+                        currentDate = naturalDate.toISOString().split('T')[0];
+                    }
+                }
 
                 if (text.includes('AM')) currentSession = 'morning';
                 else if (text.includes('PM')) currentSession = 'afternoon';

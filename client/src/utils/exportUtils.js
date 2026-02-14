@@ -127,7 +127,7 @@ export const generateDeputyReport = (allocations, config) => {
     saveAs(blob, `SIT_Exam_Allotment_${new Date().toISOString().split('T')[0]}.doc`);
 };
 
-export const generateRoomReport = (sessionData) => {
+export const generateRoomReport = (sessionData, customFilename) => {
     let docContent = '';
 
     Object.keys(sessionData).forEach(date => {
@@ -145,11 +145,38 @@ export const generateRoomReport = (sessionData) => {
                         <div style="margin-bottom: 15px;">
                             <strong>Date:</strong> ${date} (${sessionLabel})
                         </div>
-                        
+
+                        ${sessionInfo.deputies && sessionInfo.deputies.length > 0 ? `
+                        <div style="font-weight: bold; margin: 15px 0 5px 0;">Deputy Superintendents</div>
                         <table style="border-collapse: collapse; width: 100%; margin-bottom: 15px;">
                             <tr>
                                 <th style="border: 1px solid #000; padding: 5px;">Sl No</th>
                                 <th style="border: 1px solid #000; padding: 5px;">Name</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Initials</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Mobile</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Dept</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Room</th>
+                            </tr>
+                            ${sessionInfo.deputies.map((dep, idx) => `
+                                <tr>
+                                    <td style="border: 1px solid #000; padding: 5px;">${idx + 1}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.name}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.initials || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.contact || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.department || dep.dept || ''}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">-</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                        ` : ''}
+                        
+                        <div style="font-weight: bold; margin: 15px 0 5px 0;">Invigilators</div>
+                        <table style="border-collapse: collapse; width: 100%; margin-bottom: 15px;">
+                            <tr>
+                                <th style="border: 1px solid #000; padding: 5px;">Sl No</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Name</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Initials</th>
+                                <th style="border: 1px solid #000; padding: 5px;">Mobile</th>
                                 <th style="border: 1px solid #000; padding: 5px;">Dept</th>
                                 <th style="border: 1px solid #000; padding: 5px;">Room</th>
                             </tr>
@@ -157,6 +184,8 @@ export const generateRoomReport = (sessionData) => {
                                 <tr>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.slNo}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.name}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${inv.initials || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${inv.contact || '-'}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.dept}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.room}</td>
                                 </tr>
@@ -182,5 +211,161 @@ export const generateRoomReport = (sessionData) => {
     `;
 
     const blob = new Blob([htmlContent], { type: 'application/msword' });
-    saveAs(blob, `Room_Allotment_Report_${new Date().toISOString().split('T')[0]}.doc`);
+    const filename = customFilename || `Room_Allotment_Report_${new Date().toISOString().split('T')[0]}.doc`;
+    saveAs(blob, filename);
+};
+
+export const generateDepartmentReport = (sessionData) => {
+    // 1. Extract all unique dates and sessions
+    const dates = Object.keys(sessionData).sort();
+    if (dates.length === 0) return;
+
+    // Create a mapping of Date -> Sessions for report headers
+    const dateHeaders = [];
+    dates.forEach(date => {
+        ['morning', 'afternoon'].forEach(session => {
+            if (sessionData[date][session]) {
+                dateHeaders.push({ date, session, label: `${date.split(',')[0]} (${session === 'morning' ? 'AM' : 'PM'})` });
+            }
+        });
+    });
+
+    // 2. Aggregate data by Department -> Faculty
+    const deptData = {};
+
+    dates.forEach(date => {
+        ['morning', 'afternoon'].forEach(session => {
+            const sessionInfo = sessionData[date]?.[session];
+            if (!sessionInfo) return;
+
+            // Helper to process people
+            const processPerson = (person, role) => {
+                if (!person.name || person.name.startsWith('Test Faculty')) return;
+
+                const dept = person.department || person.dept || 'Unknown';
+                if (!deptData[dept]) deptData[dept] = {};
+
+                // Use Name + Initials as unique key
+                // Clean name to avoid duplicates
+                const cleanName = person.name.trim();
+                const cleanInitials = (person.initials || '').trim();
+                const key = `${cleanName}_${cleanInitials}`;
+
+                if (!deptData[dept][key]) {
+                    deptData[dept][key] = {
+                        name: cleanName,
+                        initials: cleanInitials,
+                        designation: person.designation || '',
+                        isDeputy: role === 'Deputy', // Track if they are ever a deputy
+                        duties: {}
+                    };
+                } else if (role === 'Deputy') {
+                    // Upgrade to deputy if they appear as one
+                    deptData[dept][key].isDeputy = true;
+                }
+
+                // Record duty
+                const duty = person.room || (role === 'Deputy' ? 'Deputy' : 'Invigilator');
+                deptData[dept][key].duties[`${date}_${session}`] = duty;
+            };
+
+            if (sessionInfo.deputies) sessionInfo.deputies.forEach(p => processPerson(p, 'Deputy'));
+            if (sessionInfo.invigilators) sessionInfo.invigilators.forEach(p => processPerson(p, 'Invigilator'));
+        });
+    });
+
+    // 3. Generate HTML
+    let docContent = '';
+
+    Object.keys(deptData).sort().forEach((dept, index) => {
+        const fullFacultyList = Object.values(deptData[dept]);
+        const deputyList = fullFacultyList.filter(f => f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
+        const invigilatorList = fullFacultyList.filter(f => !f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
+
+        const renderTable = (list, title) => {
+            if (list.length === 0) return '';
+            return `
+                ${title ? `<div style="font-weight: bold; font-size: 14px; margin-top: 15px; margin-bottom: 10px;">${title}</div>` : ''}
+                <table style="border-collapse: collapse; width: 100%; font-size: 10px; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #000; padding: 4px;">Sl. No.</th>
+                            <th style="border: 1px solid #000; padding: 4px;">Name of the Faculty</th>
+                            <th style="border: 1px solid #000; padding: 4px;">Initials</th>
+                            <th style="border: 1px solid #000; padding: 4px;">Designation</th>
+                            <th style="border: 1px solid #000; padding: 4px;">Allocated Dates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${list.map((fac, idx) => {
+                const dutyStrings = [];
+                dates.forEach(date => {
+                    ['morning', 'afternoon'].forEach(session => {
+                        const key = `${date}_${session}`;
+                        if (fac.duties[key]) {
+                            const sessionLabel = session === 'morning' ? 'AM' : 'PM';
+                            dutyStrings.push(`${date} (${sessionLabel})`);
+                        }
+                    });
+                });
+                const dutyContent = dutyStrings.length > 0 ? dutyStrings.join(', <br>') : '-';
+                return `
+                                <tr>
+                                    <td style="border: 1px solid #000; padding: 4px; text-align: center;">${idx + 1}</td>
+                                    <td style="border: 1px solid #000; padding: 4px;">${fac.name}</td>
+                                    <td style="border: 1px solid #000; padding: 4px;">${fac.initials}</td>
+                                    <td style="border: 1px solid #000; padding: 4px;">${fac.designation}</td>
+                                    <td style="border: 1px solid #000; padding: 4px;">${dutyContent}</td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+        };
+
+        // Explicit page break for all except first
+        const pageBreak = index > 0 ? '<br style="page-break-before: always; mso-break-type: section-break;" />' : '';
+
+        docContent += `
+            ${pageBreak}
+            <div style="padding: 20px; font-family: Arial, sans-serif;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-weight: bold; font-size: 16px;">SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR</div>
+                    <div style="font-weight: bold; font-size: 14px; margin-top: 5px;">ALLOTMENT OF INVIGILATION DUTY FOR SEMESTER EXAMINATIONS</div>
+                    <div style="font-weight: bold; font-size: 14px; margin-top: 5px; text-decoration: underline;">${dept.toUpperCase()} - EXAM ALLOTMENT</div>
+                </div>
+
+                <div style="font-size: 11px; margin-bottom: 20px;">
+                    <div style="font-weight: bold; margin-bottom: 5px;">General Instructions :</div>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 3px;">Deputy chief Supdts are requested to report to duty one hour before the schedule time of the commencement of examinations.</li>
+                        <li style="margin-bottom: 3px;">Room Supdts/Relieving Supdts are requested to report to duty HALF an hour before the scheduled time of the start of the examinations.</li>
+                        <li style="margin-bottom: 3px;">Request letter for mutual exchange of duty should be sent through Heads of the concerned Depts to the principal.</li>
+                        <li style="margin-bottom: 3px;">Mutual exchange is permitted in the same cadre and block transfer of invigilation work is not permitted.</li>
+                        <li style="margin-bottom: 3px;">Deputy Supdts/Relieving Supdts are requested to refer to the circular issued by VTU on the DUTIES and RESPONSIBILITIES and follow the same.</li>
+                    </ol>
+                    <div style="margin-top: 8px; font-style: italic;">Kind cooperation & involvement of every one is solicited for the Smooth conduct of examinations.</div>
+                </div>
+                
+                ${renderTable(deputyList, 'DEPUTY CHIEF SUPERINTENDENTS')}
+                ${renderTable(invigilatorList, 'FACULTY / INVIGILATORS')}
+            </div>
+        `;
+    });
+
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Department Allotment Report</title>
+            <style>body { font-family: Arial, sans-serif; }</style>
+        </head>
+        <body>${docContent}</body>
+        </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'application/msword' });
+    saveAs(blob, `Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.doc`);
 };

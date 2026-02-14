@@ -9,7 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
 // Database Connection
@@ -23,7 +24,9 @@ app.get('/', (req, res) => {
 
 // Import Routes
 const facultyRoutes = require('./routes/facultyRoutes');
+const allocationRoutes = require('./routes/allocationRoutes');
 app.use('/api/faculty', facultyRoutes);
+app.use('/api/allocations', allocationRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

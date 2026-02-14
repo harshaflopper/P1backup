@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { parseSessionData } from '../utils/documentParser';
-import { generateRoomReport } from '../utils/exportUtils';
+import { generateRoomReport, generateDepartmentReport } from '../utils/exportUtils';
 
 const ROOM_LIST = [
     'GJCB101', 'GJCB102', 'GJCB105', 'GJCB106', 'GJCB107', 'GJCB201', 'GJCB202', 'GJCB205', 'GJCB207', 'GJCB208',
@@ -83,7 +84,45 @@ const RoomAllotment = () => {
         });
 
         setSessionData(newSessionData);
+        setSessionData(newSessionData);
         alert('Randomization Complete!');
+    };
+
+    const handleSaveToDB = async () => {
+        try {
+            console.log('Sending sessionData:', JSON.stringify(sessionData, null, 2));
+            const res = await axios.post('/api/allocations', sessionData);
+            alert(`Allocations saved! Stats: ${JSON.stringify(res.data.stats)}`);
+        } catch (err) {
+            console.error('Save Error:', err);
+            const errMsg = err.response?.data?.msg || err.response?.data || err.message;
+            alert(`Error saving allocations: ${errMsg}`);
+        }
+    };
+
+    const handleClearDB = async () => {
+        if (!confirm('Are you sure you want to clear ALL allocations from the database? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const res = await axios.delete('/api/allocations');
+            alert(res.data.msg);
+        } catch (err) {
+            console.error('Clear DB Error:', err);
+            const errMsg = err.response?.data?.msg || err.response?.data || err.message;
+            alert(`Error clearing database: ${errMsg}`);
+        }
+    };
+
+    const handleDownloadSession = (date, session) => {
+        const singleSessionData = {
+            [date]: {
+                [session]: sessionData[date][session]
+            }
+        };
+        const filename = `Room_Allotment_${date}_${session}.doc`;
+        generateRoomReport(singleSessionData, filename);
     };
 
     return (
@@ -134,6 +173,26 @@ const RoomAllotment = () => {
                         >
                             <i className="bi bi-file-earmark-word"></i> Export Report
                         </button>
+                        <button
+                            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => generateDepartmentReport(sessionData)}
+                            disabled={Object.keys(sessionData).length === 0}
+                        >
+                            <i className="bi bi-building"></i> Dept Report
+                        </button>
+                        <button
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleSaveToDB}
+                            disabled={Object.keys(sessionData).length === 0}
+                        >
+                            <i className="bi bi-database-fill-up"></i> Save to DB
+                        </button>
+                        <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                            onClick={handleClearDB}
+                        >
+                            <i className="bi bi-trash-fill"></i> Clear DB
+                        </button>
                     </div>
                 </div>
 
@@ -161,11 +220,17 @@ const RoomAllotment = () => {
                                         <div className="text-xs text-slate-500 pl-10">
                                             {Object.keys(sessionData[date]).length} Sessions Found
                                         </div>
-                                        <div className="mt-3 pl-10 flex gap-1">
+                                        <div className="mt-3 pl-10 flex gap-2 flex-wrap">
                                             {Object.keys(sessionData[date]).map(session => (
-                                                <span key={session} className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-white border border-slate-200 text-slate-600">
-                                                    {session}
-                                                </span>
+                                                <button
+                                                    key={session}
+                                                    onClick={() => handleDownloadSession(date, session)}
+                                                    className="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-600 hover:shadow-sm transition-all"
+                                                    title={`Download ${session} Report`}
+                                                >
+                                                    <span>{session}</span>
+                                                    <i className="bi bi-download text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
