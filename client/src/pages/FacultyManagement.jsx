@@ -138,57 +138,74 @@ const FacultyManagement = () => {
     });
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Faculty Management</h1>
-                    <p className="text-slate-500 text-sm mt-1">Manage faculty details, departments, and active status.</p>
+        <div className="space-y-8 animate-fade-in-up pb-20">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-end gap-6 relative">
+                <div className="relative z-10">
+                    <h1 className="text-4xl font-bold text-white tracking-tight">
+                        Faculty<span className="text-indigo-500">_</span>Directory
+                    </h1>
+                    <p className="text-slate-500 font-bold tracking-[0.2em] mt-2 text-xs uppercase">Deep Field Data Management</p>
                 </div>
-                <div className="flex gap-3">
+
+                <div className="flex gap-4 relative z-10">
                     <button
                         onClick={handleExportAllocations}
-                        className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                        className="flex items-center gap-3 px-5 py-3 rounded-lg bg-[#0f172a] border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 hover:text-white transition-all text-xs uppercase tracking-wider"
                     >
-                        <i className="bi bi-file-earmark-spreadsheet"></i> Dept Report
+                        <i className="bi bi-cloud-arrow-down-fill text-lg"></i>
+                        <span>Extract Data</span>
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                        className="flex items-center gap-3 px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-900/20 transition-all text-xs uppercase tracking-wider"
                     >
-                        <i className="bi bi-person-plus-fill"></i> Add Faculty
+                        <i className="bi bi-plus-lg text-lg"></i>
+                        <span>New Entry</span>
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <i className="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            {/* Filter Bar */}
+            <div className="bg-[#0f172a]/80 p-1.5 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-2 backdrop-blur-xl shadow-xl items-center">
+                <div className="relative flex-1 w-full group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                        <i className="bi bi-search"></i>
+                    </div>
                     <input
                         type="text"
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition"
-                        placeholder="Search by name or initials..."
+                        className="w-full pl-12 pr-6 py-3 rounded-lg bg-transparent text-slate-200 placeholder-slate-600 font-medium focus:bg-white/5 outline-none transition-all text-sm"
+                        placeholder="Search faculty signals..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="md:w-64">
+                <div className="md:w-px md:h-8 bg-slate-800 hidden md:block"></div>
+                <div className="md:w-64 w-full relative">
                     <select
-                        className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition appearance-none bg-white"
+                        className="w-full pl-4 pr-10 py-3 rounded-lg bg-transparent text-slate-300 font-bold outline-none cursor-pointer appearance-none hover:bg-white/5 transition-colors text-xs uppercase tracking-wider"
                         value={departmentFilter}
                         onChange={(e) => setDepartmentFilter(e.target.value)}
-                        style={{ backgroundImage: 'none' }} // Custom arrow can be added with CSS or a wrapper
                     >
-                        <option value="">All Departments</option>
+                        <option value="" className="bg-[#0f172a] text-slate-400">All Departments</option>
                         {departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
+                            <option key={dept} value={dept} className="bg-[#0f172a] text-slate-200">{dept}</option>
                         ))}
                     </select>
+                    <i className="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-xs"></i>
                 </div>
             </div>
 
+            {/* List Content */}
             {loading ? (
-                <div className="flex justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                <div className="flex justify-center py-32">
+                    <div className="flex flex-col items-center gap-6">
+                        <div className="relative">
+                            <div className="w-20 h-20 border-4 border-cyan-900/50 border-t-cyan-400 rounded-full animate-spin"></div>
+                            <div className="absolute inset-0 border-4 border-cyan-400/20 rounded-full animate-pulse blur-[1px]"></div>
+                        </div>
+                        <span className="text-cyan-400 font-bold tracking-[0.3em] uppercase text-xs animate-pulse">Initializing Sonar...</span>
+                    </div>
                 </div>
             ) : (
                 <FacultyTable
