@@ -126,110 +126,114 @@ const RoomAllotment = () => {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-10 pb-20 font-sans text-retro-dark">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-2 border-retro-dark/10 pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Room Allotment</h1>
-                    <p className="text-slate-500 text-sm mt-1">Upload exam schedules, randomize invigilators, and map them to rooms.</p>
+                    <h1 className="text-3xl font-black text-retro-dark tracking-tight uppercase">Room Allotment</h1>
+                    <p className="text-retro-secondary text-sm font-bold mt-1 tracking-wide uppercase">Upload exam schedules to allocate rooms.</p>
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Upload Card */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div className="p-8 text-center">
-                        <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i className="bi bi-cloud-upload text-4xl text-brand-600"></i>
+                <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
+                    <div className="p-10 text-center">
+                        <div className="w-24 h-24 bg-retro-cream rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-retro-dark shadow-sm">
+                            <i className="bi bi-cloud-upload text-4xl text-retro-dark"></i>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Upload Exam Schedule</h3>
-                        <p className="text-slate-500 mb-8 max-w-md mx-auto">Drag and drop your HTML/DOC file here to load session data and begin the allotment process.</p>
+                        <h3 className="text-2xl font-black text-retro-dark mb-2 uppercase tracking-tight">Upload Exam Schedule</h3>
+                        <p className="text-retro-secondary mb-8 max-w-md mx-auto font-bold text-sm">Drag and drop your HTML/DOC file here to load session data and begin the allotment process.</p>
 
-                        <div className="relative inline-block w-full max-w-md">
+                        <div className="relative inline-block w-full max-w-md group">
                             <input
                                 type="file"
                                 accept=".html,.htm,.doc,.docx"
                                 onChange={handleFileUpload}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
-                            <div className="flex items-center justify-center w-full px-6 py-4 border-2 border-dashed border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
-                                <span className="text-slate-600 font-medium">Choose File</span>
+                            <div className="flex items-center justify-center w-full px-6 py-5 border-2 border-dashed border-retro-secondary/50 rounded-xl bg-retro-cream/20 group-hover:bg-retro-cream/50 group-hover:border-retro-dark transition-all">
+                                <span className="text-retro-dark font-black uppercase tracking-wider text-sm group-hover:scale-105 transition-transform">Choose File</span>
                             </div>
                         </div>
-                        <p className="text-xs text-slate-400 mt-2 font-mono">Supported: HTML, DOC</p>
+                        <p className="text-[10px] text-retro-secondary mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
                     </div>
 
-                    <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 flex justify-center gap-4">
+                    <div className="bg-retro-cream/30 px-8 py-6 border-t-2 border-retro-dark flex flex-wrap justify-center gap-4">
                         <button
-                            className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-retro-blue hover:bg-retro-blue/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={handleRandomize}
                             disabled={Object.keys(sessionData).length === 0}
                         >
-                            <i className="bi bi-shuffle"></i> Randomize
+                            Allocate Room
                         </button>
                         <button
-                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={() => generateRoomReport(sessionData)}
                             disabled={Object.keys(sessionData).length === 0}
                         >
-                            <i className="bi bi-file-earmark-word"></i> Export Report
+                            Export Report
                         </button>
                         <button
-                            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={() => generateDepartmentReport(sessionData)}
                             disabled={Object.keys(sessionData).length === 0}
                         >
-                            <i className="bi bi-building"></i> Dept Report
+                            Dept Report
                         </button>
                         <button
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-retro-dark hover:bg-retro-dark/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={handleSaveToDB}
                             disabled={Object.keys(sessionData).length === 0}
                         >
-                            <i className="bi bi-database-fill-up"></i> Save to DB
+                            Save Allocation
                         </button>
                         <button
-                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm active:scale-95 transition-all flex items-center gap-2"
+                            className="bg-retro-red hover:bg-retro-red/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
                             onClick={handleClearDB}
                         >
-                            <i className="bi bi-trash-fill"></i> Clear DB
+                            Delete Allocation
                         </button>
                     </div>
                 </div>
 
                 {/* Preview Section */}
                 {Object.keys(sessionData).length > 0 && (
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                            <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                                <i className="bi bi-eye text-brand-500"></i> Allocation Preview
+                    <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
+                        <div className="px-6 py-4 border-b-2 border-retro-dark bg-retro-cream/30 flex justify-between items-center">
+                            <h4 className="font-black text-retro-dark flex items-center gap-3 uppercase tracking-tight">
+                                <span className="w-8 h-8 rounded-lg bg-retro-blue text-white flex items-center justify-center border-2 border-retro-dark shadow-sm"><i className="bi bi-eye-fill"></i></span>
+                                Allocation Preview
                             </h4>
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-200 px-2 py-1 rounded">
+                            <span className="text-[10px] font-black text-retro-dark uppercase tracking-widest bg-retro-white px-3 py-1.5 rounded-lg border-2 border-retro-dark shadow-sm">
                                 {Object.keys(sessionData).length} Dates Loaded
                             </span>
                         </div>
                         <div className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {Object.keys(sessionData).map(date => (
-                                    <div key={date} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:shadow-md transition-all">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-xs">
+                                    <div key={date} className="p-5 rounded-xl border-2 border-retro-dark bg-retro-white hover:bg-retro-cream/20 hover:shadow-paper hover:translate-y-[-2px] transition-all group">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-retro-dark text-retro-cream flex items-center justify-center font-black text-lg border-2 border-retro-dark group-hover:rotate-6 transition-transform">
                                                 {new Date(date).getDate()}
                                             </div>
-                                            <h6 className="font-bold text-slate-900">{date}</h6>
+                                            <div>
+                                                <h6 className="font-black text-retro-dark uppercase tracking-tight text-sm">{date}</h6>
+                                                <div className="text-[10px] font-bold text-retro-secondary uppercase tracking-wider">
+                                                    {Object.keys(sessionData[date]).length} Sessions
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-slate-500 pl-10">
-                                            {Object.keys(sessionData[date]).length} Sessions Found
-                                        </div>
-                                        <div className="mt-3 pl-10 flex gap-2 flex-wrap">
+
+                                        <div className="mt-4 flex gap-2 flex-wrap">
                                             {Object.keys(sessionData[date]).map(session => (
                                                 <button
                                                     key={session}
                                                     onClick={() => handleDownloadSession(date, session)}
-                                                    className="group flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase bg-white border border-slate-200 text-slate-600 hover:border-brand-300 hover:text-brand-600 hover:shadow-sm transition-all"
+                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase bg-white border-2 border-retro-border text-retro-secondary hover:border-retro-blue hover:text-retro-blue hover:shadow-sm transition-all"
                                                     title={`Download ${session} Report`}
                                                 >
                                                     <span>{session}</span>
-                                                    <i className="bi bi-download text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                    <i className="bi bi-download"></i>
                                                 </button>
                                             ))}
                                         </div>

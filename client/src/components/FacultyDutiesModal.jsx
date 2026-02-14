@@ -23,74 +23,85 @@ const FacultyDutiesModal = ({ faculty, onClose }) => {
     }, [faculty]);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden transform transition-all scale-100 flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-retro-dark/80 backdrop-blur-sm transition-opacity animate-in fade-in duration-200">
+            <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark w-full max-w-4xl overflow-hidden transform transition-all scale-100 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+                <div className="px-8 py-5 border-b-2 border-retro-dark flex justify-between items-center bg-retro-cream/50">
                     <div>
-                        <h3 className="text-lg font-bold text-slate-800">Exam Duties</h3>
-                        <p className="text-sm text-slate-500">
-                            Schedule for <span className="font-bold text-slate-900">{faculty.name}</span> ({faculty.initials})
+                        <h3 className="text-xl font-black text-retro-dark uppercase tracking-tight">Exam Duties</h3>
+                        <p className="text-xs font-bold text-retro-secondary uppercase tracking-widest mt-1">
+                            Schedule for <span className="text-retro-blue">{faculty.name}</span> ({faculty.initials})
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
+                        className="text-retro-secondary hover:text-retro-red transition-colors w-10 h-10 flex items-center justify-center rounded-lg hover:bg-retro-dark/5 border-2 border-transparent hover:border-retro-dark"
                     >
-                        <i className="bi bi-x-lg"></i>
+                        <i className="bi bi-x-lg text-lg"></i>
                     </button>
                 </div>
 
-                <div className="p-6 overflow-y-auto flex-1">
+                <div className="p-8 overflow-y-auto flex-1 bg-retro-white">
                     {loading ? (
                         <div className="flex justify-center py-12">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600"></div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-retro-dark border-t-retro-blue"></div>
                         </div>
                     ) : duties.length === 0 ? (
-                        <div className="text-center py-12 text-slate-500">
-                            <i className="bi bi-calendar-x text-4xl mb-3 block text-slate-300"></i>
-                            No duties assigned yet.
+                        <div className="text-center py-16 flex flex-col items-center gap-4">
+                            <div className="w-20 h-20 rounded-full bg-retro-cream border-2 border-retro-dark flex items-center justify-center text-retro-secondary">
+                                <i className="bi bi-calendar-x text-4xl"></i>
+                            </div>
+                            <div>
+                                <h4 className="font-black text-retro-dark text-lg uppercase tracking-tight">No Duties Found</h4>
+                                <p className="text-retro-secondary font-bold text-sm">This faculty member has not been assigned any duties yet.</p>
+                            </div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto rounded-lg border border-slate-200">
+                        <div className="overflow-x-auto rounded-xl border-2 border-retro-dark shadow-sm">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50 text-slate-500">
+                                <thead className="bg-retro-cream text-retro-secondary">
                                     <tr>
-                                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b border-slate-200">Date</th>
-                                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b border-slate-200">Session</th>
-                                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b border-slate-200">Role</th>
-                                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b border-slate-200">Room</th>
-                                        <th className="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b border-slate-200">Designation Recorded</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-2 border-retro-dark">Date</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-2 border-retro-dark">Session</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-2 border-retro-dark">Role</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-2 border-retro-dark">Room</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-2 border-retro-dark">Recorded As</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-retro-dark/10 bg-retro-white">
                                     {duties.map((duty, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">
-                                                {new Date(duty.date).toLocaleDateString('en-GB', {
-                                                    weekday: 'short',
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric'
-                                                })}
+                                        <tr key={idx} className="hover:bg-retro-cream/30 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-retro-dark text-sm">
+                                                    {new Date(duty.date).toLocaleDateString('en-GB', {
+                                                        weekday: 'short',
+                                                        day: 'numeric',
+                                                        month: 'short'
+                                                    })}
+                                                </div>
+                                                <div className="text-[10px] font-bold text-retro-secondary uppercase tracking-wider">
+                                                    {new Date(duty.date).getFullYear()}
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-3 text-sm">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase ${duty.session === 'morning'
-                                                        ? 'bg-amber-100 text-amber-700'
-                                                        : 'bg-indigo-100 text-indigo-700'
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border-2 ${duty.session === 'morning' || duty.session === 'Morning'
+                                                    ? 'bg-retro-blue/10 text-retro-blue border-retro-blue'
+                                                    : 'bg-retro-red/10 text-retro-red border-retro-red'
                                                     }`}>
                                                     {duty.session}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-sm">
-                                                <span className={`font-bold ${duty.role === 'Deputy' ? 'text-purple-600' : 'text-slate-600'
+                                            <td className="px-6 py-4">
+                                                <span className={`font-black text-xs uppercase tracking-wide ${duty.role === 'Deputy' ? 'text-purple-600' : 'text-retro-dark'
                                                     }`}>
                                                     {duty.role}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-sm font-mono font-bold text-slate-700">
-                                                {duty.room}
+                                            <td className="px-6 py-4">
+                                                <div className="font-mono font-bold text-retro-dark bg-retro-cream px-2 py-1 rounded border border-retro-dark/20 inline-block text-xs">
+                                                    {duty.room}
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-slate-500 italic">
+                                            <td className="px-6 py-4 text-xs font-bold text-retro-secondary italic">
                                                 {duty.designation}
                                             </td>
                                         </tr>
@@ -101,12 +112,12 @@ const FacultyDutiesModal = ({ faculty, onClose }) => {
                     )}
                 </div>
 
-                <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <div className="px-8 py-5 bg-retro-cream/30 border-t-2 border-retro-dark flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-lg font-medium text-slate-600 hover:bg-slate-200 transition-colors"
+                        className="px-6 py-3 rounded-lg font-black text-retro-dark bg-retro-white border-2 border-retro-dark hover:bg-retro-dark hover:text-retro-white shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all uppercase tracking-wider text-xs"
                     >
-                        Close
+                        Close Window
                     </button>
                 </div>
             </div>

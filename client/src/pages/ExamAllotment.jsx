@@ -114,8 +114,7 @@ const ExamAllotment = () => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-6">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Exam Control Center</h1>
-                    <p className="text-slate-500 mt-2 text-base max-w-2xl">Orchestrate exam schedules, configure session capacities, and manage faculty allocations with precision.</p>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Allotment</h1>
                 </div>
                 <div>
                     <span className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-sm font-semibold shadow-sm">
@@ -126,63 +125,53 @@ const ExamAllotment = () => {
             </div>
 
             {/* Steps Indicator */}
-            <div className="max-w-4xl mx-auto">
-                <div className="relative">
-                    <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -z-10 -translate-y-1/2 rounded-full"></div>
-                    <div className="flex justify-between w-full">
-                        {[
-                            { num: 1, label: 'Schedule', icon: 'bi-calendar-range' },
-                            { num: 2, label: 'Capacity', icon: 'bi-sliders' },
-                            { num: 3, label: 'Allotment', icon: 'bi-kanban' }
-                        ].map((s) => (
-                            <div key={s.num} className="flex flex-col items-center gap-3 bg-white px-4 cursor-default group">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all duration-300 shadow-sm border ${step >= s.num
-                                    ? 'bg-slate-900 text-white border-slate-900 shadow-slate-900/20'
-                                    : 'bg-white text-slate-300 border-slate-100'
-                                    }`}>
-                                    {step > s.num ? <i className="bi bi-check-lg text-2xl"></i> : <i className={`bi ${s.icon}`}></i>}
-                                </div>
-                                <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${step >= s.num ? 'text-slate-900' : 'text-slate-300'}`}>
-                                    {s.label}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+
 
             {/* Step 1: Date Selection */}
             {step === 1 && (
-                <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
-                    <div className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
-                        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-3">
-                            <span className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center"><i className="bi bi-calendar-week-fill"></i></span>
-                            Define Exam Window
-                        </h3>
+                <div className="max-w-xl mx-auto bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden mt-10">
+                    <div className="bg-retro-cream/30 px-8 py-6 border-b-2 border-retro-dark flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-retro-blue border-2 border-retro-dark flex items-center justify-center text-white shadow-sm">
+                            <i className="bi bi-calendar-range-fill text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-retro-dark uppercase tracking-tight leading-none">
+                                Exam Window
+                            </h3>
+                            <p className="text-xs font-bold text-retro-secondary uppercase tracking-widest mt-1">Select Schedule Range</p>
+                        </div>
                     </div>
+
                     <div className="p-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Start Date</label>
-                                <input type="date" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-semibold text-slate-700 bg-slate-50/30 focus:bg-white"
-                                    value={dateRange.start}
-                                    onChange={e => setDateRange({ ...dateRange, start: e.target.value })}
-                                />
+                                <label className="text-xs font-black text-retro-dark uppercase tracking-wider pl-1">Start Date</label>
+                                <div className="relative">
+                                    <input type="date" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-white focus:border-retro-blue focus:bg-white focus:shadow-paper focus:translate-y-[-2px] outline-none transition-all font-bold text-retro-dark cursor-pointer hover:bg-retro-cream/20"
+                                        value={dateRange.start}
+                                        onChange={e => setDateRange({ ...dateRange, start: e.target.value })}
+                                    />
+                                    <i className="bi bi-calendar absolute right-4 top-1/2 -translate-y-1/2 text-retro-secondary pointer-events-none"></i>
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">End Date</label>
-                                <input type="date" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-semibold text-slate-700 bg-slate-50/30 focus:bg-white"
-                                    value={dateRange.end}
-                                    onChange={e => setDateRange({ ...dateRange, end: e.target.value })}
-                                />
+                                <label className="text-xs font-black text-retro-dark uppercase tracking-wider pl-1">End Date</label>
+                                <div className="relative">
+                                    <input type="date" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-white focus:border-retro-blue focus:bg-white focus:shadow-paper focus:translate-y-[-2px] outline-none transition-all font-bold text-retro-dark cursor-pointer hover:bg-retro-cream/20"
+                                        value={dateRange.end}
+                                        onChange={e => setDateRange({ ...dateRange, end: e.target.value })}
+                                    />
+                                    <i className="bi bi-calendar-fill absolute right-4 top-1/2 -translate-y-1/2 text-retro-secondary pointer-events-none"></i>
+                                </div>
                             </div>
                         </div>
-                        <div className="mt-10">
+
+                        <div className="mt-8 pt-6 border-t-2 border-retro-border/50">
                             <button
-                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-slate-900/10 active:scale-[0.99] transition-all flex items-center justify-center gap-3"
+                                className="w-full bg-retro-dark hover:bg-retro-blue text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-paper hover:translate-y-[-2px] active:translate-y-[0px] active:shadow-sm transition-all flex items-center justify-center gap-3 border-2 border-retro-dark group"
                                 onClick={generateDates}
                             >
-                                Initialize Sessions <i className="bi bi-arrow-right"></i>
+                                Continue
                             </button>
                         </div>
                     </div>
@@ -192,20 +181,20 @@ const ExamAllotment = () => {
             {/* Step 2: Session Configuration */}
             {step >= 2 && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="flex flex-col sm:flex-row justify-between items-center bg-white p-5 rounded-2xl border border-slate-100 shadow-lg shadow-slate-200/50 sticky top-20 z-20 backdrop-blur-md bg-white/90">
+                    <div className="flex flex-col sm:flex-row justify-between items-center bg-retro-white p-5 rounded-xl border-2 border-retro-dark shadow-paper sticky top-20 z-20 backdrop-blur-md">
                         <div>
-                            <h4 className="font-bold text-slate-800 text-lg">Configuration</h4>
-                            <p className="text-sm text-slate-400">Set room counts for {dates.length} days</p>
+                            <h4 className="font-black text-retro-dark text-lg uppercase tracking-tight">Enter Rooms Required</h4>
+                            <p className="text-xs font-bold text-retro-secondary uppercase tracking-widest mt-1">Set room counts for {dates.length} days</p>
                         </div>
                         <div className="flex gap-3 mt-4 sm:mt-0">
                             {step === 3 && (
-                                <button className="px-5 py-2.5 rounded-xl font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition" onClick={() => setStep(2)}>
+                                <button className="px-6 py-2.5 rounded-lg font-bold text-retro-secondary hover:text-retro-dark hover:bg-retro-dark/5 transition uppercase tracking-wider text-xs" onClick={() => setStep(2)}>
                                     Back
                                 </button>
                             )}
                             {step === 2 && (
-                                <button className="px-8 py-3 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/30 active:scale-95 transition-all flex items-center gap-2" onClick={() => setStep(3)}>
-                                    Generate Allocation <i className="bi bi-lightning-charge-fill"></i>
+                                <button className="px-6 py-3 rounded-lg font-black text-white bg-retro-blue hover:bg-retro-blue/90 shadow-paper hover:translate-y-[-2px] active:translate-y-[0px] transition-all border-2 border-retro-dark uppercase tracking-wider text-xs flex items-center gap-2" onClick={() => setStep(3)}>
+                                    Allocate <i className="bi bi-lightning-charge-fill"></i>
                                 </button>
                             )}
                         </div>
@@ -214,17 +203,17 @@ const ExamAllotment = () => {
                     {step === 2 && (
                         <div className="grid gap-8">
                             {dates.map(date => (
-                                <div key={date} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-300 group">
-                                    <div className="px-8 py-5 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 flex items-center justify-between">
+                                <div key={date} className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden group">
+                                    <div className="px-8 py-5 bg-retro-cream/30 border-b-2 border-retro-dark flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-700 shadow-sm font-bold text-lg group-hover:scale-110 transition-transform duration-300">
+                                            <div className="h-12 w-12 rounded-lg bg-retro-dark border-2 border-retro-dark flex items-center justify-center text-retro-cream shadow-sm font-black text-lg group-hover:rotate-3 transition-transform duration-300">
                                                 {new Date(date).getDate()}
                                             </div>
                                             <div>
-                                                <h5 className="font-bold text-slate-900 text-lg">
+                                                <h5 className="font-black text-retro-dark text-lg uppercase tracking-tight">
                                                     {new Date(date).toLocaleDateString('en-GB', { weekday: 'long' })}
                                                 </h5>
-                                                <p className="text-slate-400 text-sm font-medium uppercase tracking-wide">
+                                                <p className="text-retro-secondary text-xs font-bold uppercase tracking-widest">
                                                     {new Date(date).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                                                 </p>
                                             </div>
@@ -233,74 +222,74 @@ const ExamAllotment = () => {
 
                                     <div className="p-8 grid lg:grid-cols-2 gap-12 relative">
                                         {/* Divider */}
-                                        <div className="hidden lg:block absolute left-1/2 top-8 bottom-8 w-px bg-slate-100"></div>
+                                        <div className="hidden lg:block absolute left-1/2 top-8 bottom-8 w-0.5 bg-retro-dark/10 border-l-2 border-dashed border-retro-dark/20"></div>
 
-                                        {/* AM Session */}
+                                        {/* AM Session (Blue Theme) */}
                                         <div className="space-y-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 rounded-lg bg-amber-100 text-amber-600"><i className="bi bi-brightness-high-fill text-xl"></i></div>
-                                                <span className="font-extrabold text-slate-700 tracking-tight">MORNING SESSION</span>
+                                            <div className="flex items-center gap-3 border-b-2 border-retro-dark/10 pb-2">
+                                                <div className="p-2 rounded-lg bg-retro-blue text-white border-2 border-retro-dark shadow-sm"><i className="bi bi-brightness-high-fill text-lg"></i></div>
+                                                <span className="font-black text-retro-dark tracking-tight uppercase">MORNING SESSION</span>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div>
-                                                    <label className="block text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-widest">Total Rooms</label>
-                                                    <input type="number" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition font-bold text-slate-800 text-xl"
+                                                    <label className="block text-[10px] font-black text-retro-secondary mb-2 uppercase tracking-widest">Total Rooms</label>
+                                                    <input type="number" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-cream/20 focus:border-retro-blue focus:bg-white focus:shadow-paper outline-none transition-all font-bold text-retro-dark text-xl"
                                                         value={config[date]?.morning?.rooms || 0}
                                                         onChange={(e) => handleRoomChange(date, 'morning', e.target.value)}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-widest">Relievers + Extra</label>
-                                                    <input type="number" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 font-bold text-xl" readOnly
+                                                    <label className="block text-[10px] font-black text-retro-secondary mb-2 uppercase tracking-widest">Relievers + Extra</label>
+                                                    <input type="number" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-dark/5 text-retro-secondary font-bold text-xl" readOnly
                                                         value={config[date]?.morning?.relievers || 0}
                                                     />
                                                 </div>
                                             </div>
 
                                             <div className="flex gap-4">
-                                                <div className="flex-1 bg-amber-50/50 rounded-xl p-4 border border-amber-100 flex flex-col items-center">
-                                                    <span className="text-[10px] font-bold text-amber-800/60 uppercase tracking-widest mb-1">Deputies</span>
-                                                    <span className="text-2xl font-black text-amber-600">{calculateRequirements(config[date]?.morning?.rooms, 0).profs}</span>
+                                                <div className="flex-1 bg-retro-blue/10 rounded-lg p-4 border-2 border-retro-blue/20 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-retro-blue uppercase tracking-widest mb-1">Deputies</span>
+                                                    <span className="text-2xl font-black text-retro-blue">{calculateRequirements(config[date]?.morning?.rooms, 0).profs}</span>
                                                 </div>
-                                                <div className="flex-1 bg-slate-50/50 rounded-xl p-4 border border-slate-100 flex flex-col items-center">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Invigilators</span>
-                                                    <span className="text-2xl font-black text-slate-600">{calculateRequirements(config[date]?.morning?.rooms, config[date]?.morning?.relievers).nonProfs}</span>
+                                                <div className="flex-1 bg-retro-secondary/5 rounded-lg p-4 border-2 border-retro-secondary/10 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-retro-secondary uppercase tracking-widest mb-1">Invigilators</span>
+                                                    <span className="text-2xl font-black text-retro-secondary">{calculateRequirements(config[date]?.morning?.rooms, config[date]?.morning?.relievers).nonProfs}</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* PM Session */}
+                                        {/* PM Session (Red Theme) */}
                                         <div className="space-y-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600"><i className="bi bi-moon-stars-fill text-xl"></i></div>
-                                                <span className="font-extrabold text-slate-700 tracking-tight">AFTERNOON SESSION</span>
+                                            <div className="flex items-center gap-3 border-b-2 border-retro-dark/10 pb-2">
+                                                <div className="p-2 rounded-lg bg-retro-red text-white border-2 border-retro-dark shadow-sm"><i className="bi bi-moon-stars-fill text-lg"></i></div>
+                                                <span className="font-black text-retro-dark tracking-tight uppercase">AFTERNOON SESSION</span>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div>
-                                                    <label className="block text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-widest">Total Rooms</label>
-                                                    <input type="number" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 outline-none transition font-bold text-slate-800 text-xl"
+                                                    <label className="block text-[10px] font-black text-retro-secondary mb-2 uppercase tracking-widest">Total Rooms</label>
+                                                    <input type="number" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-cream/20 focus:border-retro-red focus:bg-white focus:shadow-paper outline-none transition-all font-bold text-retro-dark text-xl"
                                                         value={config[date]?.afternoon?.rooms || 0}
                                                         onChange={(e) => handleRoomChange(date, 'afternoon', e.target.value)}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-[11px] font-extrabold text-slate-400 mb-2 uppercase tracking-widest">Relievers + Extra</label>
-                                                    <input type="number" className="w-full px-4 py-3 rounded-xl border-2 border-slate-100 bg-slate-50 text-slate-400 font-bold text-xl" readOnly
+                                                    <label className="block text-[10px] font-black text-retro-secondary mb-2 uppercase tracking-widest">Relievers + Extra</label>
+                                                    <input type="number" className="w-full px-4 py-3 rounded-lg border-2 border-retro-border bg-retro-dark/5 text-retro-secondary font-bold text-xl" readOnly
                                                         value={config[date]?.afternoon?.relievers || 0}
                                                     />
                                                 </div>
                                             </div>
 
                                             <div className="flex gap-4">
-                                                <div className="flex-1 bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 flex flex-col items-center">
-                                                    <span className="text-[10px] font-bold text-indigo-800/60 uppercase tracking-widest mb-1">Deputies</span>
-                                                    <span className="text-2xl font-black text-indigo-600">{calculateRequirements(config[date]?.afternoon?.rooms, 0).profs}</span>
+                                                <div className="flex-1 bg-retro-red/10 rounded-lg p-4 border-2 border-retro-red/20 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-retro-red uppercase tracking-widest mb-1">Deputies</span>
+                                                    <span className="text-2xl font-black text-retro-red">{calculateRequirements(config[date]?.afternoon?.rooms, 0).profs}</span>
                                                 </div>
-                                                <div className="flex-1 bg-slate-50/50 rounded-xl p-4 border border-slate-100 flex flex-col items-center">
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Invigilators</span>
-                                                    <span className="text-2xl font-black text-slate-600">{calculateRequirements(config[date]?.afternoon?.rooms, config[date]?.afternoon?.relievers).nonProfs}</span>
+                                                <div className="flex-1 bg-retro-secondary/5 rounded-lg p-4 border-2 border-retro-secondary/10 flex flex-col items-center">
+                                                    <span className="text-[10px] font-black text-retro-secondary uppercase tracking-widest mb-1">Invigilators</span>
+                                                    <span className="text-2xl font-black text-retro-secondary">{calculateRequirements(config[date]?.afternoon?.rooms, config[date]?.afternoon?.relievers).nonProfs}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -315,64 +304,60 @@ const ExamAllotment = () => {
             {/* Step 3: Allocation Table */}
             {step === 3 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/40 border border-slate-100 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark p-6 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl animate-pulse">
-                                <i className="bi bi-cpu-fill"></i>
-                            </div>
                             <div>
-                                <h4 className="font-bold text-slate-900 text-lg">System Ready</h4>
-                                <p className="text-slate-500 font-medium">Ready to allocate duties for <span className="text-slate-900 font-bold">{dates.length} days</span>.</p>
+                                <h4 className="font-black text-retro-dark text-lg uppercase tracking-tight">Allocate duties for {dates.length} days</h4>
                             </div>
                         </div>
                         <div className="flex gap-3">
-                            <button className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 px-6 py-3 rounded-xl font-bold shadow-sm transition active:scale-95" onClick={handleAllocate}>
-                                <i className="bi bi-arrow-repeat mr-2"></i> Re-Run
+                            <button className="bg-retro-white hover:bg-retro-cream text-retro-secondary border-2 border-retro-border px-6 py-3 rounded-lg font-bold shadow-sm transition active:scale-95 uppercase tracking-wider text-xs" onClick={handleAllocate}>
+                                Re-Run
                             </button>
-                            <button className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold shadow-xl shadow-slate-900/20 active:scale-95 transition-all flex items-center gap-2" onClick={handleAllocate} disabled={dates.length === 0}>
-                                <i className="bi bi-magic mr-2"></i> Auto Allocate
+                            <button className="bg-retro-dark hover:bg-retro-blue text-white px-8 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs" onClick={handleAllocate} disabled={dates.length === 0}>
+                                Allocate
                             </button>
                         </div>
                     </div>
 
                     {/* Quick Actions */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <button className="bg-white hover:bg-red-50 text-red-600 border border-slate-200 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group" onClick={() => setAllocations({})}>
+                        <button className="bg-retro-white hover:bg-retro-red/10 text-retro-red border-2 border-retro-border hover:border-retro-red px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => setAllocations({})}>
                             <i className="bi bi-trash3 group-hover:scale-110 transition-transform"></i> Clear All
                         </button>
-                        <button className="col-span-1 lg:col-span-3 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-100 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group" onClick={() => generateDeputyReport(allocations, config)} disabled={Object.keys(allocations).length === 0}>
+                        <button className="col-span-1 lg:col-span-3 bg-retro-white hover:bg-green-50 text-green-700 border-2 border-retro-border hover:border-green-600 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => generateDeputyReport(allocations, config)} disabled={Object.keys(allocations).length === 0}>
                             <i className="bi bi-file-earmark-word-fill text-xl group-hover:scale-110 transition-transform"></i> Download Official Allocation Report (.doc)
                         </button>
                     </div>
 
                     {/* Table */}
-                    <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+                    <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
                         <div className="overflow-x-auto max-h-[700px]">
-                            <table className="w-full text-left border-collapse bg-white">
-                                <thead className="bg-slate-900 text-white sticky top-0 z-20 shadow-xl">
+                            <table className="w-full text-left border-collapse bg-retro-white">
+                                <thead className="bg-retro-dark text-white sticky top-0 z-20 shadow-md">
                                     <tr>
-                                        <th className="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400 border-b border-slate-800">Faculty Member</th>
-                                        <th className="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-slate-400 border-b border-slate-800">Department</th>
-                                        <th className="px-4 py-4 text-center text-[11px] font-extrabold uppercase tracking-widest text-white bg-indigo-600 border-b border-indigo-700 w-24">Total</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-retro-border/60 border-b border-retro-secondary">Faculty Member</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-retro-border/60 border-b border-retro-secondary">Department</th>
+                                        <th className="px-4 py-4 text-center text-[10px] font-black uppercase tracking-widest text-white bg-retro-blue border-b border-retro-blue w-24">Total</th>
                                         {dates.map(date => (
-                                            <th key={date} colSpan="2" className="text-center px-2 py-2 border-l border-slate-700/50 bg-slate-800">
+                                            <th key={date} colSpan="2" className="text-center px-2 py-2 border-l border-retro-secondary/50 bg-retro-secondary/20">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] uppercase tracking-wider text-slate-400">{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                                                    <span className="text-[9px] uppercase tracking-wider text-retro-border">{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                                                 </div>
                                             </th>
                                         ))}
                                     </tr>
                                     <tr>
-                                        <th colSpan="3" className="bg-slate-950 h-1"></th>
+                                        <th colSpan="3" className="bg-retro-dark h-1"></th>
                                         {dates.map(date => (
                                             <React.Fragment key={date}>
-                                                <th className="px-1 py-1.5 text-[9px] text-center uppercase font-bold text-amber-500 bg-slate-900 border-l border-slate-800">AM</th>
-                                                <th className="px-1 py-1.5 text-[9px] text-center uppercase font-bold text-indigo-400 bg-slate-900">PM</th>
+                                                <th className="px-1 py-1.5 text-[8px] text-center uppercase font-black text-retro-cream bg-retro-dark border-l border-retro-secondary/30">AM</th>
+                                                <th className="px-1 py-1.5 text-[8px] text-center uppercase font-black text-retro-blue bg-retro-dark">PM</th>
                                             </React.Fragment>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-retro-border/50">
                                     {faculty.sort((a, b) => {
                                         if (a.designation === 'Professor' && b.designation !== 'Professor') return -1;
                                         if (a.designation !== 'Professor' && b.designation === 'Professor') return 1;
@@ -383,20 +368,20 @@ const ExamAllotment = () => {
                                         let total = 0;
                                         const isProf = prof.designation === 'Professor';
                                         return (
-                                            <tr key={prof._id} className={`hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                                            <tr key={prof._id} className={`hover:bg-retro-cream/30 transition-colors ${idx % 2 === 0 ? 'bg-retro-white' : 'bg-retro-cream/10'}`}>
                                                 <td className="px-6 py-3.5 whitespace-nowrap">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isProf ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 ${isProf ? 'bg-retro-cream border-retro-dark text-retro-dark' : 'bg-retro-white border-retro-border text-retro-secondary'}`}>
                                                             {prof.name.charAt(0)}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-slate-800 text-sm">{prof.name}</div>
-                                                            {isProf && <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-100 mt-0.5">PROFESSOR</span>}
+                                                            <div className="font-bold text-retro-dark text-sm">{prof.name}</div>
+                                                            {isProf && <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-retro-cream border border-retro-dark/20 text-retro-dark mt-0.5 uppercase tracking-wide">PROF</span>}
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-3.5 whitespace-nowrap">
-                                                    <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                                                    <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-retro-white text-retro-secondary border-2 border-retro-border">
                                                         {prof.department}
                                                     </span>
                                                 </td>
@@ -410,7 +395,7 @@ const ExamAllotment = () => {
                                                             });
                                                         });
                                                         return (
-                                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg font-bold text-sm ${count > 0 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30' : 'text-slate-300 bg-slate-100'}`}>
+                                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm border-2 ${count > 0 ? 'bg-retro-blue text-white border-retro-dark shadow-sm' : 'text-retro-border bg-retro-white border-retro-border'}`}>
                                                                 {count || 0}
                                                             </span>
                                                         );
@@ -432,13 +417,13 @@ const ExamAllotment = () => {
                                         )
                                     })}
                                 </tbody>
-                                <tfoot className="sticky bottom-0 bg-white font-bold z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] border-t border-slate-200">
-                                    <tr className="bg-slate-50">
-                                        <td className="p-4 text-left font-extrabold text-slate-400 text-xs uppercase tracking-widest pl-6">Grand Totals</td>
+                                <tfoot className="sticky bottom-0 bg-retro-white font-bold z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] border-t-2 border-retro-dark">
+                                    <tr className="bg-retro-cream/20">
+                                        <td className="p-4 text-left font-black text-retro-secondary text-xs uppercase tracking-widest pl-6">Grand Totals</td>
                                         <td className="p-4"></td>
                                         <td className="p-4 text-center">
                                             <div className="flex items-center justify-center">
-                                                <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-bold">
+                                                <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-retro-dark text-white text-xs font-black border-2 border-retro-secondary">
                                                     {faculty.reduce((sum, f) => {
                                                         let count = 0;
                                                         Object.values(allocations).forEach(day => {
@@ -454,8 +439,8 @@ const ExamAllotment = () => {
                                         </td>
                                         {dates.map(date => (
                                             <React.Fragment key={date}>
-                                                <td className="p-3 text-center border-l border-slate-200/50">
-                                                    <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                                                <td className="p-3 text-center border-l border-retro-border">
+                                                    <span className="text-xs font-black text-retro-dark bg-retro-cream px-2 py-1 rounded-md border border-retro-dark/20">
                                                         {(() => {
                                                             const am = allocations[date]?.morning;
                                                             return (am?.deputies?.length || 0) + (am?.invigilators?.length || 0);
@@ -463,7 +448,7 @@ const ExamAllotment = () => {
                                                     </span>
                                                 </td>
                                                 <td className="p-3 text-center">
-                                                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-100">
+                                                    <span className="text-xs font-black text-white bg-retro-blue px-2 py-1 rounded-md border border-retro-dark/20">
                                                         {(() => {
                                                             const pm = allocations[date]?.afternoon;
                                                             return (pm?.deputies?.length || 0) + (pm?.invigilators?.length || 0);
@@ -485,23 +470,23 @@ const ExamAllotment = () => {
 
 // Helper sub-component for cleaner table cells
 const DutyCell = ({ session, allocated }) => {
-    if (!allocated) return <td className="p-2 border-l border-slate-50"></td>;
+    if (!allocated) return <td className="p-2 border-l border-retro-border/50"></td>;
 
     const isDep = allocated === 'DEP';
     const isAm = session === 'morning';
 
-    // AM colors: Amber, PM colors: Indigo
+    // AM colors: Cream/Dark, PM colors: Blue/White
     // Deputy: Solid Badge, Invigilator: Check Icon
 
     return (
-        <td className={`p-2 text-center border-l border-dashed ${isAm ? 'border-amber-100/50 bg-amber-50/30' : 'border-indigo-100/50 bg-indigo-50/30'}`}>
+        <td className={`p-2 text-center border-l border-retro-border/50 bg-retro-white`}>
             {isDep ? (
-                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black tracking-wide shadow-sm ${isAm ? 'bg-amber-500 text-white' : 'bg-indigo-600 text-white'
+                <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black tracking-wide shadow-sm border ${isAm ? 'bg-retro-cream text-retro-dark border-retro-dark' : 'bg-retro-blue text-white border-retro-dark'
                     }`}>
                     DEP
                 </span>
             ) : (
-                <div className={`w-6 h-6 mx-auto rounded-full flex items-center justify-center text-xs ${isAm ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-100 text-emerald-600'
+                <div className={`w-6 h-6 mx-auto rounded-full flex items-center justify-center text-xs ${isAm ? 'text-retro-dark bg-retro-cream/50' : 'text-retro-blue bg-retro-blue/10'
                     }`}>
                     <i className="bi bi-check-lg font-bold"></i>
                 </div>

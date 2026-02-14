@@ -21,10 +21,10 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                 <div className="px-8 py-5 border-b-2 border-retro-dark bg-retro-cream/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <i className="bi bi-table text-retro-secondary"></i>
-                        <h2 className="text-sm font-black text-retro-dark uppercase tracking-widest">Personnel Manifest</h2>
+                        <h2 className="text-sm font-black text-retro-dark uppercase tracking-widest">List</h2>
                     </div>
                     <span className="px-3 py-1 rounded-lg bg-retro-white border-2 border-retro-dark text-[10px] font-bold text-retro-dark shadow-sm">
-                        {faculty.length} RECORDS
+                        {faculty.length} Faculty
                     </span>
                 </div>
 
@@ -32,7 +32,7 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="text-[11px] text-retro-secondary uppercase tracking-wider font-bold border-b-2 border-retro-border bg-retro-white">
-                                <th className="px-8 py-4 pl-10 w-[30%]">Identity</th>
+                                <th className="px-8 py-4 pl-10 w-[30%]">Name</th>
                                 <th className="px-6 py-4 w-[20%]">Role</th>
                                 <th className="px-6 py-4 w-[20%]">Department</th>
                                 <th className="px-6 py-4 w-[10%] text-center">Status</th>
@@ -89,8 +89,8 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                                         <button
                                             onClick={() => onToggleStatus(fac._id)}
                                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${fac.isActive
-                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200'
-                                                    : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
+                                                ? 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200'
+                                                : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
                                                 }`}
                                         >
                                             <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>

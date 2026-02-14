@@ -94,10 +94,7 @@ const Layout = ({ children }) => {
                 <main className="flex-1 overflow-hidden relative">
                     <div className="h-full overflow-y-auto px-10 pb-10 pt-6 scroll-smooth no-scrollbar">
                         <div className="max-w-7xl mx-auto w-full">
-                            <div className="flex items-center gap-3 mb-6 opacity-60">
-                                <i className="bi bi-geo-alt text-retro-red"></i>
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-retro-secondary font-bold font-mono">System_Coordinates_Active</span>
-                            </div>
+
                             {children}
                         </div>
                     </div>

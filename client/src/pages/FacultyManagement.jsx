@@ -142,10 +142,9 @@ const FacultyManagement = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 relative">
                 <div className="relative z-10">
-                    <h1 className="text-5xl font-black text-retro-dark tracking-tighter">
-                        Faculty<span className="text-retro-blue">_</span>Directory
+                    <h1 className="text-4xl font-black text-retro-dark tracking-tight">
+                        Faculty Details
                     </h1>
-                    <p className="text-retro-secondary font-bold tracking-[0.2em] mt-2 text-xs uppercase">Institutional Roster</p>
                 </div>
 
                 <div className="flex gap-4 relative z-10">
@@ -154,14 +153,14 @@ const FacultyManagement = () => {
                         className="flex items-center gap-3 px-5 py-3 rounded-lg bg-white border-2 border-retro-border text-retro-secondary font-bold hover:border-retro-blue hover:text-retro-blue transition-all text-xs uppercase tracking-wider"
                     >
                         <i className="bi bi-cloud-arrow-down-fill text-lg"></i>
-                        <span>Extract Data</span>
+                        <span>Dept Doc</span>
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-3 px-6 py-3 rounded-lg bg-retro-blue text-white font-bold shadow-paper hover:translate-y-[-2px] hover:shadow-lg transition-all border-2 border-retro-dark text-xs uppercase tracking-wider"
                     >
                         <i className="bi bi-plus-lg text-lg"></i>
-                        <span>New Entry</span>
+                        <span>New Faculty</span>
                     </button>
                 </div>
             </div>
@@ -221,6 +220,7 @@ const FacultyManagement = () => {
                     onClose={() => setShowModal(false)}
                     onSave={handleAddFaculty}
                     departments={departments}
+                    faculty={faculty}
                 />
             )}
 
