@@ -1,24 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
 
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
+    @apply bg-retro-cream text-retro-dark antialiased font-sans selection:bg-retro-blue selection:text-white;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-brand-700 transition shadow-sm hover:shadow-md active:scale-95;
+    @apply bg-retro-blue text-white px-4 py-2 rounded-lg font-bold hover:bg-retro-blue/90 transition shadow-paper hover:translate-y-[-2px] active:translate-y-[0px] active:shadow-sm border-2 border-retro-dark;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden;
+    @apply bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition;
+    @apply w-full px-4 py-2 rounded-lg border-2 border-retro-border bg-retro-white text-retro-dark placeholder-retro-secondary focus:border-retro-blue focus:outline-none transition;
   }
 }

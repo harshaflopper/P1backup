@@ -142,23 +142,23 @@ const FacultyManagement = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end gap-6 relative">
                 <div className="relative z-10">
-                    <h1 className="text-4xl font-bold text-white tracking-tight">
-                        Faculty<span className="text-indigo-500">_</span>Directory
+                    <h1 className="text-5xl font-black text-retro-dark tracking-tighter">
+                        Faculty<span className="text-retro-blue">_</span>Directory
                     </h1>
-                    <p className="text-slate-500 font-bold tracking-[0.2em] mt-2 text-xs uppercase">Deep Field Data Management</p>
+                    <p className="text-retro-secondary font-bold tracking-[0.2em] mt-2 text-xs uppercase">Institutional Roster</p>
                 </div>
 
                 <div className="flex gap-4 relative z-10">
                     <button
                         onClick={handleExportAllocations}
-                        className="flex items-center gap-3 px-5 py-3 rounded-lg bg-[#0f172a] border border-slate-700 text-slate-300 font-bold hover:bg-slate-800 hover:text-white transition-all text-xs uppercase tracking-wider"
+                        className="flex items-center gap-3 px-5 py-3 rounded-lg bg-white border-2 border-retro-border text-retro-secondary font-bold hover:border-retro-blue hover:text-retro-blue transition-all text-xs uppercase tracking-wider"
                     >
                         <i className="bi bi-cloud-arrow-down-fill text-lg"></i>
                         <span>Extract Data</span>
                     </button>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="flex items-center gap-3 px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-900/20 transition-all text-xs uppercase tracking-wider"
+                        className="flex items-center gap-3 px-6 py-3 rounded-lg bg-retro-blue text-white font-bold shadow-paper hover:translate-y-[-2px] hover:shadow-lg transition-all border-2 border-retro-dark text-xs uppercase tracking-wider"
                     >
                         <i className="bi bi-plus-lg text-lg"></i>
                         <span>New Entry</span>
@@ -166,33 +166,33 @@ const FacultyManagement = () => {
                 </div>
             </div>
 
-            {/* Filter Bar */}
-            <div className="bg-[#0f172a]/80 p-1.5 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-2 backdrop-blur-xl shadow-xl items-center">
+            {/* Filter Bar (Retro Pill) */}
+            <div className="bg-retro-white p-2 rounded-xl border-2 border-retro-dark/10 flex flex-col md:flex-row gap-2 shadow-sm items-center">
                 <div className="relative flex-1 w-full group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-retro-secondary group-focus-within:text-retro-blue transition-colors">
                         <i className="bi bi-search"></i>
                     </div>
                     <input
                         type="text"
-                        className="w-full pl-12 pr-6 py-3 rounded-lg bg-transparent text-slate-200 placeholder-slate-600 font-medium focus:bg-white/5 outline-none transition-all text-sm"
-                        placeholder="Search faculty signals..."
+                        className="w-full pl-12 pr-6 py-3 rounded-lg bg-transparent text-retro-dark placeholder-retro-secondary/50 font-bold focus:bg-retro-cream/20 outline-none transition-all text-sm"
+                        placeholder="Search faculty..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="md:w-px md:h-8 bg-slate-800 hidden md:block"></div>
+                <div className="md:w-px md:h-8 bg-retro-dark/10 hidden md:block"></div>
                 <div className="md:w-64 w-full relative">
                     <select
-                        className="w-full pl-4 pr-10 py-3 rounded-lg bg-transparent text-slate-300 font-bold outline-none cursor-pointer appearance-none hover:bg-white/5 transition-colors text-xs uppercase tracking-wider"
+                        className="w-full pl-4 pr-10 py-3 rounded-lg bg-transparent text-retro-secondary font-bold outline-none cursor-pointer appearance-none hover:bg-retro-cream/20 transition-colors text-xs uppercase tracking-wider"
                         value={departmentFilter}
                         onChange={(e) => setDepartmentFilter(e.target.value)}
                     >
-                        <option value="" className="bg-[#0f172a] text-slate-400">All Departments</option>
+                        <option value="" className="bg-white text-retro-secondary">All Departments</option>
                         {departments.map(dept => (
-                            <option key={dept} value={dept} className="bg-[#0f172a] text-slate-200">{dept}</option>
+                            <option key={dept} value={dept} className="bg-white text-retro-dark">{dept}</option>
                         ))}
                     </select>
-                    <i className="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-xs"></i>
+                    <i className="bi bi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-retro-secondary pointer-events-none text-xs"></i>
                 </div>
             </div>
 

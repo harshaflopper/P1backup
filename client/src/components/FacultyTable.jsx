@@ -3,27 +3,27 @@ import React from 'react';
 const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
     if (faculty.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-80 rounded-3xl bg-[#0f172a]/60 backdrop-blur-xl border border-slate-800/50">
-                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4">
-                    <i className="bi bi-list-ul text-3xl text-slate-600"></i>
+            <div className="flex flex-col items-center justify-center h-80 rounded-xl bg-retro-white border-2 border-dashed border-retro-border">
+                <div className="w-16 h-16 rounded-full bg-retro-cream flex items-center justify-center mb-4 text-retro-secondary">
+                    <i className="bi bi-clipboard-x text-3xl"></i>
                 </div>
-                <h3 className="text-slate-400 font-medium">Directory Empty</h3>
+                <h3 className="text-retro-secondary font-bold">Directory Empty</h3>
             </div>
         );
     }
 
     return (
         <div className="w-full">
-            {/* Glass Container */}
-            <div className="rounded-3xl bg-[#0f172a]/70 backdrop-blur-2xl border border-white/5 overflow-hidden shadow-2xl shadow-black/50">
+            {/* Retro Card Container */}
+            <div className="rounded-xl bg-retro-white border-2 border-retro-dark overflow-hidden shadow-paper">
 
-                {/* Header (Integrated) */}
-                <div className="px-8 py-5 border-b border-white/5 flex items-center justify-between bg-[#020617]/30">
+                {/* Header */}
+                <div className="px-8 py-5 border-b-2 border-retro-dark bg-retro-cream/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <i className="bi bi-table text-slate-500"></i>
-                        <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest">Personnel List</h2>
+                        <i className="bi bi-table text-retro-secondary"></i>
+                        <h2 className="text-sm font-black text-retro-dark uppercase tracking-widest">Personnel Manifest</h2>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-slate-400 border border-white/5">
+                    <span className="px-3 py-1 rounded-lg bg-retro-white border-2 border-retro-dark text-[10px] font-bold text-retro-dark shadow-sm">
                         {faculty.length} RECORDS
                     </span>
                 </div>
@@ -31,36 +31,36 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="text-[11px] text-slate-500 uppercase tracking-wider font-bold border-b border-white/5 bg-[#1e293b]/20">
+                            <tr className="text-[11px] text-retro-secondary uppercase tracking-wider font-bold border-b-2 border-retro-border bg-retro-white">
                                 <th className="px-8 py-4 pl-10 w-[30%]">Identity</th>
                                 <th className="px-6 py-4 w-[20%]">Role</th>
-                                <th className="px-6 py-4 w-[25%]">Department</th>
-                                <th className="px-6 py-4 w-[15%] text-center">Status</th>
-                                <th className="px-8 py-4 w-[10%] text-right pr-10">Actions</th>
+                                <th className="px-6 py-4 w-[20%]">Department</th>
+                                <th className="px-6 py-4 w-[10%] text-center">Status</th>
+                                <th className="px-8 py-4 w-[20%] text-right pr-10">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-retro-border">
                             {faculty.map((fac) => (
                                 <tr
                                     key={fac._id}
-                                    className="group hover:bg-white/[0.02] transition-colors duration-200"
+                                    className="group hover:bg-retro-cream/30 transition-colors duration-200"
                                 >
                                     {/* Identity */}
                                     <td className="px-8 py-4 pl-10">
                                         <div className="flex items-center gap-4">
                                             <div className="relative">
-                                                <div className="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shadow-sm group-hover:border-slate-600 transition-colors">
+                                                <div className="w-10 h-10 rounded-lg bg-retro-blue border-2 border-retro-dark flex items-center justify-center text-xs font-bold text-white shadow-[2px_2px_0px_rgba(0,0,0,1)] group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
                                                     {fac.initials}
                                                 </div>
                                                 {fac.isActive && (
-                                                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-[#0f172a]"></div>
+                                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white"></div>
                                                 )}
                                             </div>
                                             <div>
-                                                <div className="font-semibold text-slate-200 text-sm group-hover:text-white transition-colors">
+                                                <div className="font-bold text-retro-dark text-sm">
                                                     {fac.name}
                                                 </div>
-                                                <div className="text-[10px] text-slate-500 font-mono tracking-wide">
+                                                <div className="text-[10px] text-retro-secondary font-mono tracking-wide">
                                                     {fac.email}
                                                 </div>
                                             </div>
@@ -69,7 +69,7 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
 
                                     {/* Role */}
                                     <td className="px-6 py-4">
-                                        <span className="text-xs text-slate-400 font-medium bg-white/5 px-2 py-1 rounded border border-white/5">
+                                        <span className="text-xs text-retro-dark font-bold bg-retro-cream px-2 py-1 rounded border border-retro-border">
                                             {fac.designation}
                                         </span>
                                     </td>
@@ -77,39 +77,39 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                                     {/* Department */}
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
-                                            <span className="w-1 h-1 rounded-full bg-slate-600"></span>
-                                            <span className="text-xs text-slate-400 font-medium truncate">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-retro-blue"></span>
+                                            <span className="text-xs text-retro-secondary font-bold truncate">
                                                 {fac.department}
                                             </span>
                                         </div>
                                     </td>
 
-                                    {/* Status Toggle (Pill) */}
+                                    {/* Status Toggle */}
                                     <td className="px-6 py-4 text-center">
                                         <button
                                             onClick={() => onToggleStatus(fac._id)}
-                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${fac.isActive
-                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                                                    : 'bg-slate-800/50 text-slate-500 border-slate-700 hover:bg-slate-700'
+                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${fac.isActive
+                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200'
+                                                    : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
                                                 }`}
                                         >
-                                            <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-400' : 'bg-slate-500'}`}></span>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>
                                             {fac.isActive ? 'Active' : 'Offline'}
                                         </button>
                                     </td>
 
-                                    {/* Actions */}
+                                    {/* Actions (Text Buttons) */}
                                     <td className="px-8 py-4 pr-10 text-right">
-                                        <div className="flex items-center justify-end gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => onViewDuties(fac)}
-                                                className="px-3 py-1.5 rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95"
+                                                className="px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
                                             >
                                                 DUTIES
                                             </button>
                                             <button
                                                 onClick={() => onDelete(fac._id)}
-                                                className="px-3 py-1.5 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95"
+                                                className="px-3 py-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
                                             >
                                                 DELETE
                                             </button>
