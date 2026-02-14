@@ -304,11 +304,23 @@ export const generateDepartmentReport = (sessionData) => {
                         const key = `${date}_${session}`;
                         if (fac.duties[key]) {
                             const sessionLabel = session === 'morning' ? 'AM' : 'PM';
-                            dutyStrings.push(`${date} (${sessionLabel})`);
+                            // Try to format date from 'February 16, 2026' to '16-02-2026'
+                            let shortDate = date;
+                            try {
+                                const d = new Date(date);
+                                if (!isNaN(d.getTime())) {
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                                    const year = d.getFullYear();
+                                    shortDate = `${day}-${month}-${year}`;
+                                }
+                            } catch (e) { /* ignore */ }
+
+                            dutyStrings.push(`${shortDate} (${sessionLabel})`);
                         }
                     });
                 });
-                const dutyContent = dutyStrings.length > 0 ? dutyStrings.join(', <br>') : '-';
+                const dutyContent = dutyStrings.length > 0 ? dutyStrings.join(', ') : '-';
                 return `
                                 <tr>
                                     <td style="border: 1px solid #000; padding: 4px; text-align: center;">${idx + 1}</td>
@@ -355,14 +367,34 @@ export const generateDepartmentReport = (sessionData) => {
     });
 
     const htmlContent = `
-        <!DOCTYPE html>
-        <html>
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
             <meta charset="UTF-8">
             <title>Department Allotment Report</title>
-            <style>body { font-family: Arial, sans-serif; }</style>
+            <!--[if gte mso 9]>
+            <xml>
+            <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+                @page {
+                    size: 29.7cm 21cm;
+                    mso-page-orientation: landscape;
+                    margin: 1cm;
+                }
+                body { 
+                    font-family: Arial, sans-serif; 
+                }
+            </style>
         </head>
-        <body>${docContent}</body>
+        <body>
+            <div>
+                ${docContent}
+            </div>
+        </body>
         </html>
     `;
 
