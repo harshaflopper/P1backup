@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { parseSessionData } from '../utils/documentParser';
-import { generateRoomReport, generateDepartmentReport, generateRoomPDF } from '../utils/exportUtils';
+import { generateRoomReport, generateDepartmentReport, generateRoomPDF, generateDepartmentPDF } from '../utils/exportUtils';
 
 const ROOM_LIST = [
     'GJCB101', 'GJCB102', 'GJCB105', 'GJCB106', 'GJCB107', 'GJCB201', 'GJCB202', 'GJCB205', 'GJCB207', 'GJCB208',
@@ -189,11 +189,25 @@ const RoomAllotment = () => {
                             Export Report
                         </button>
                         <button
+                            className="bg-red-600 hover:bg-red-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+                            onClick={() => generateRoomPDF(sessionData)}
+                            disabled={Object.keys(sessionData).length === 0}
+                        >
+                            Export PDF
+                        </button>
+                        <button
                             className="bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={() => generateDepartmentReport(sessionData)}
                             disabled={Object.keys(sessionData).length === 0}
                         >
                             Dept Report
+                        </button>
+                        <button
+                            className="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+                            onClick={() => generateDepartmentPDF(sessionData)}
+                            disabled={Object.keys(sessionData).length === 0}
+                        >
+                            Dept PDF
                         </button>
                         <button
                             className="bg-retro-dark hover:bg-retro-dark/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
@@ -216,8 +230,7 @@ const RoomAllotment = () => {
                     <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
                         <div className="px-6 py-4 border-b-2 border-retro-dark bg-retro-cream/30 flex justify-between items-center">
                             <h4 className="font-black text-retro-dark flex items-center gap-3 uppercase tracking-tight">
-                                <span className="w-8 h-8 rounded-lg bg-retro-blue text-white flex items-center justify-center border-2 border-retro-dark shadow-sm"><i className="bi bi-eye-fill"></i></span>
-                                Allocation Preview
+                                Downloads
                             </h4>
                             <span className="text-[10px] font-black text-retro-dark uppercase tracking-widest bg-retro-white px-3 py-1.5 rounded-lg border-2 border-retro-dark shadow-sm">
                                 {Object.keys(sessionData).length} Dates Loaded

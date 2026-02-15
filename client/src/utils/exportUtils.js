@@ -495,3 +495,172 @@ export const generateRoomPDF = (sessionData, customFilename) => {
         alert("Failed to generate PDF. See console for details.");
     }
 };
+
+export const generateDepartmentPDF = (sessionData) => {
+    try {
+        // 1. Extract all unique dates and sessions
+        const dates = Object.keys(sessionData).sort();
+        if (dates.length === 0) return;
+
+        // 2. Aggregate data by Department -> Faculty
+        const deptData = {};
+
+        dates.forEach(date => {
+            ['morning', 'afternoon'].forEach(session => {
+                const sessionInfo = sessionData[date]?.[session];
+                if (!sessionInfo) return;
+
+                // Helper to process people
+                const processPerson = (person, role) => {
+                    if (!person.name || person.name.startsWith('Test Faculty')) return;
+
+                    const dept = person.department || person.dept || 'Unknown';
+                    if (!deptData[dept]) deptData[dept] = {};
+
+                    // Use Name + Initials as unique key
+                    const cleanName = person.name.trim();
+                    const cleanInitials = (person.initials || '').trim();
+                    const key = `${cleanName}_${cleanInitials}`;
+
+                    if (!deptData[dept][key]) {
+                        deptData[dept][key] = {
+                            name: cleanName,
+                            initials: cleanInitials,
+                            designation: person.designation || '',
+                            isDeputy: role === 'Deputy',
+                            duties: {}
+                        };
+                    } else if (role === 'Deputy') {
+                        deptData[dept][key].isDeputy = true;
+                    }
+
+                    // Record duty
+                    const duty = person.room || (role === 'Deputy' ? 'Deputy' : 'Invigilator');
+                    deptData[dept][key].duties[`${date}_${session}`] = duty;
+                };
+
+                if (sessionInfo.deputies) sessionInfo.deputies.forEach(p => processPerson(p, 'Deputy'));
+                if (sessionInfo.invigilators) sessionInfo.invigilators.forEach(p => processPerson(p, 'Invigilator'));
+            });
+        });
+
+        // 3. Generate PDF
+        const doc = new jsPDF({ orientation: 'landscape' });
+        let isFirstPage = true;
+
+        Object.keys(deptData).sort().forEach((dept) => {
+            const fullFacultyList = Object.values(deptData[dept]);
+            const deputyList = fullFacultyList.filter(f => f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
+            const invigilatorList = fullFacultyList.filter(f => !f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
+
+            if (!isFirstPage) {
+                doc.addPage();
+            }
+            isFirstPage = false;
+
+            // Header
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR', 148.5, 15, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.text('ALLOTMENT OF INVIGILATION DUTY FOR SEMESTER EXAMINATIONS', 148.5, 23, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.text(`${dept.toUpperCase()} - EXAM ALLOTMENT`, 148.5, 30, { align: 'center' }); // Added Underline manually by drawing line if needed, but text is fine.
+
+            // General Instructions
+            doc.setFontSize(10);
+            doc.text('General Instructions :', 14, 40);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+
+            const instructions = [
+                '1. Deputy chief Supdts are requested to report to duty one hour before the schedule time of the commencement of examinations.',
+                '2. Room Supdts/Relieving Supdts are requested to report to duty HALF an hour before the scheduled time of the start of the examinations.',
+                '3. Request letter for mutual exchange of duty should be sent through Heads of the concerned Depts to the principal.',
+                '4. Mutual exchange is permitted in the same cadre and block transfer of invigilation work is not permitted.',
+                '5. Deputy Supdts/Relieving Supdts are requested to refer to the circular issued by VTU on the DUTIES and RESPONSIBILITIES and follow the same.'
+            ];
+
+            let instrY = 45;
+            instructions.forEach(inst => {
+                const splitText = doc.splitTextToSize(inst, 270);
+                doc.text(splitText, 14, instrY);
+                instrY += (splitText.length * 4);
+            });
+
+            doc.setFont('helvetica', 'italic');
+            doc.text('Kind cooperation & involvement of every one is solicited for the Smooth conduct of examinations.', 14, instrY + 2);
+
+            let startY = instrY + 10;
+
+            const renderTable = (list, title) => {
+                if (list.length === 0) return;
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(11);
+                doc.text(title, 14, startY);
+                startY += 5;
+
+                const headers = [['Sl. No.', 'Name of the Faculty', 'Initials', 'Designation', 'Allocated Dates']];
+                const rows = list.map((fac, idx) => {
+                    const dutyStrings = [];
+                    dates.forEach(date => {
+                        ['morning', 'afternoon'].forEach(session => {
+                            const key = `${date}_${session}`;
+                            if (fac.duties[key]) {
+                                const sessionLabel = session === 'morning' ? 'AM' : 'PM';
+                                let shortDate = date;
+                                try {
+                                    const d = new Date(date);
+                                    if (!isNaN(d.getTime())) {
+                                        const day = String(d.getDate()).padStart(2, '0');
+                                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                                        const year = d.getFullYear();
+                                        shortDate = `${day}-${month}-${year}`;
+                                    }
+                                } catch (e) { /* ignore */ }
+                                dutyStrings.push(`${shortDate} (${sessionLabel})`);
+                            }
+                        });
+                    });
+                    return [
+                        idx + 1,
+                        fac.name,
+                        fac.initials,
+                        fac.designation,
+                        dutyStrings.join(', ')
+                    ];
+                });
+
+                autoTable(doc, {
+                    startY: startY,
+                    head: headers,
+                    body: rows,
+                    theme: 'grid',
+                    styles: { fontSize: 9, cellPadding: 2 },
+                    headStyles: { fillColor: [220, 220, 220], textColor: 20, fontStyle: 'bold' },
+                    columnStyles: {
+                        0: { cellWidth: 15, halign: 'center' },
+                        1: { cellWidth: 50 },
+                        2: { cellWidth: 20 },
+                        3: { cellWidth: 40 },
+                        4: { cellWidth: 'auto' }
+                    }
+                });
+
+                startY = doc.lastAutoTable.finalY + 10;
+            };
+
+            renderTable(deputyList, 'DEPUTY CHIEF SUPERINTENDENTS');
+            renderTable(invigilatorList, 'FACULTY / INVIGILATORS');
+        });
+
+        doc.save(`Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    } catch (error) {
+        console.error("Dept PDF Generation Error:", error);
+        alert("Failed to generate Dept PDF. See console for details.");
+    }
+};
