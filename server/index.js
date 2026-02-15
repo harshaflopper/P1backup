@@ -15,7 +15,10 @@ app.use(cors());
 
 // Database Connection
 const connectDB = require('./config/db');
-connectDB();
+const seedDatabase = require('./utils/autoSeed');
+connectDB().then(() => {
+    seedDatabase();
+});
 
 // Routes
 app.get('/', (req, res) => {

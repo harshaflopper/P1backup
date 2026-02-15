@@ -9,7 +9,7 @@ const Navbar = () => {
         }`;
 
     return (
-        <nav className="h-20 px-8 flex items-center justify-between bg-retro-cream/90 backdrop-blur-md border-b-2 border-retro-dark sticky top-0 z-50">
+        <nav className="h-20 px-8 flex items-center justify-between bg-[#66AB96] backdrop-blur-md border-b-2 border-retro-dark sticky top-0 z-50">
 
             {/* 1. Brand */}
             <div className="flex items-center gap-4">

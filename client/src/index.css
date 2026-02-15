@@ -7,7 +7,7 @@
 
 @layer base {
   body {
-    @apply bg-retro-cream text-retro-dark antialiased font-sans selection:bg-retro-blue selection:text-white;
+    @apply bg-[#66AB96] text-retro-dark antialiased font-sans selection:bg-retro-blue selection:text-white;
   }
 }
 

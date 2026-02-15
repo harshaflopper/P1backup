@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
     }, []);
 
     return (
-        <div className="flex flex-col h-screen bg-retro-cream text-retro-dark overflow-hidden font-sans relative selection:bg-retro-red selection:text-white">
+        <div className="flex flex-col h-screen bg-[#66AB96] text-retro-dark overflow-hidden font-sans relative selection:bg-retro-red selection:text-white">
 
             {/* --- RETRO STAR CHART (PAPER THEME) --- */}
 
@@ -66,13 +66,13 @@ const Layout = ({ children }) => {
             {/* 3. PLANETARY DIAGRAMS (Blueprint Style) */}
 
             {/* Planet 1: RED GIANT SKETCH (Top Right) */}
-            <div className="fixed top-[-10%] right-[-10%] w-[600px] h-[600px] pointer-events-none z-0 flex items-center justify-center animate-saturn-drift opacity-20">
+            <div className="fixed top-[-10%] right-[-10%] w-[600px] h-[600px] pointer-events-none z-0 flex items-center justify-center animate-saturn-drift opacity-40">
                 <div className="absolute w-[400px] h-[400px] rounded-full border-[1px] border-retro-red border-dashed"></div>
                 <div className="absolute w-[350px] h-[350px] rounded-full border-[2px] border-retro-red/30"></div>
             </div>
 
             {/* Planet 2: BLUE RINGS (Bottom Left) */}
-            <div className="fixed bottom-[-15%] left-[-5%] w-[700px] h-[700px] pointer-events-none z-0 animate-float opacity-30">
+            <div className="fixed bottom-[-15%] left-[-5%] w-[700px] h-[700px] pointer-events-none z-0 animate-float opacity-50">
                 {/* Main Body Outline */}
                 <div className="absolute inset-[15%] rounded-full border-[2px] border-retro-blue bg-retro-blue/5"></div>
                 {/* Ring Outline */}
@@ -80,9 +80,9 @@ const Layout = ({ children }) => {
             </div>
 
             {/* Grid Lines (Graph Paper Effect) */}
-            <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03]"
+            <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.1]"
                 style={{
-                    backgroundImage: `linear-gradient(to right, #1E1E1E 1px, transparent 1px), linear-gradient(to bottom, #1E1E1E 1px, transparent 1px)`,
+                    backgroundImage: `linear-gradient(to right, #FFFFFF 1px, transparent 1px), linear-gradient(to bottom, #FFFFFF 1px, transparent 1px)`,
                     backgroundSize: '40px 40px'
                 }}>
             </div>

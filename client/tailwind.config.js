@@ -13,7 +13,7 @@ export default {
             },
             colors: {
                 retro: {
-                    cream: '#E9D8A6',      // Background
+                    cream: '#E3F2ED',      // Background (Updated to match Green Tea theme)
                     blue: '#6FA9C9',       // Primary
                     red: '#D13A3A',        // Accent
                     dark: '#1E1E1E',       // Primary Text

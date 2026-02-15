@@ -19,5 +19,11 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      ".env",
+      ".env.local"
+    ]
   }
 }
