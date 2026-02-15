@@ -13,7 +13,8 @@ const Navbar = () => {
 
             {/* 1. Brand */}
             <div className="flex items-center gap-4">
-                <img src="/image.png" alt="SIT Logo" className="w-12 h-12 object-contain filter drop-shadow-sm" />
+                <img src="/sit-logo.png" alt="Siddaganga Institute of Technology" className="w-12 h-12 object-contain filter drop-shadow-sm" />
+
                 <div>
                     <h1 className="text-lg font-black text-retro-dark tracking-tight leading-tight uppercase max-w-[200px] md:max-w-none">Siddaganga Institute of Technology</h1>
                 </div>

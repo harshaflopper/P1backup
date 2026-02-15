@@ -30,6 +30,12 @@ const importData = async () => {
         // Clear existing data
         await Faculty.deleteMany();
         await Department.deleteMany();
+        try {
+            await Faculty.collection.dropIndexes();
+        } catch (e) {
+            console.log('No indexes to drop or error dropping indexes');
+        }
+
         console.log('Existing data cleared');
 
         // Read all JSON files
