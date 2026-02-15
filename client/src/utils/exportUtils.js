@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { saveAs } from 'file-saver';
 
 // Helper to format date
@@ -400,4 +400,98 @@ export const generateDepartmentReport = (sessionData) => {
 
     const blob = new Blob([htmlContent], { type: 'application/msword' });
     saveAs(blob, `Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.doc`);
+};
+
+export const generateRoomPDF = (sessionData, customFilename) => {
+    try {
+        const doc = new jsPDF();
+
+        let isFirstPage = true;
+
+        Object.keys(sessionData).forEach(date => {
+            Object.keys(sessionData[date]).forEach(session => {
+                const sessionInfo = sessionData[date][session];
+                if (!sessionInfo.invigilators || sessionInfo.invigilators.length === 0) return;
+
+                if (!isFirstPage) {
+                    doc.addPage();
+                }
+                isFirstPage = false;
+
+                const sessionLabel = session === 'morning' ? 'MORNING' : 'AFTERNOON';
+
+                // Header
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR', 105, 15, { align: 'center' });
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Date: ${date} (${sessionLabel})`, 14, 25);
+
+                let startY = 35;
+
+                // Deputies Table
+                if (sessionInfo.deputies && sessionInfo.deputies.length > 0) {
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Deputy Superintendents', 14, startY);
+                    startY += 5;
+
+                    const deputyHeaders = [['Sl No', 'Name', 'Initials', 'Mobile', 'Dept', 'Room']];
+                    const deputyRows = sessionInfo.deputies.map((dep, idx) => [
+                        idx + 1,
+                        dep.name,
+                        dep.initials || '-',
+                        dep.contact || '-',
+                        dep.department || dep.dept || '',
+                        '-'
+                    ]);
+
+                    autoTable(doc, {
+                        startY: startY,
+                        head: deputyHeaders,
+                        body: deputyRows,
+                        theme: 'grid',
+                        styles: { fontSize: 9, cellPadding: 2 },
+                        headStyles: { fillColor: [220, 220, 220], textColor: 20, fontStyle: 'bold' }
+                    });
+
+                    startY = doc.lastAutoTable.finalY + 10;
+                }
+
+                // Invigilators Table
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Invigilators', 14, startY);
+                startY += 5;
+
+                const invigHeaders = [['Sl No', 'Name', 'Initials', 'Mobile', 'Dept', 'Room']];
+                const invigRows = sessionInfo.invigilators.map(inv => [
+                    inv.slNo,
+                    inv.name,
+                    inv.initials || '-',
+                    inv.contact || '-',
+                    inv.dept,
+                    inv.room
+                ]);
+
+                autoTable(doc, {
+                    startY: startY,
+                    head: invigHeaders,
+                    body: invigRows,
+                    theme: 'grid',
+                    styles: { fontSize: 9, cellPadding: 2 },
+                    headStyles: { fillColor: [220, 220, 220], textColor: 20, fontStyle: 'bold' }
+                });
+            });
+        });
+
+        const filename = customFilename || `Room_Allotment_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
+
+    } catch (error) {
+        console.error("PDF Generation Error:", error);
+        alert("Failed to generate PDF. See console for details.");
+    }
 };

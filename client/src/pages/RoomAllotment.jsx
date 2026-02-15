@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { parseSessionData } from '../utils/documentParser';
-import { generateRoomReport, generateDepartmentReport } from '../utils/exportUtils';
+import { generateRoomReport, generateDepartmentReport, generateRoomPDF } from '../utils/exportUtils';
 
 const ROOM_LIST = [
     'GJCB101', 'GJCB102', 'GJCB105', 'GJCB106', 'GJCB107', 'GJCB201', 'GJCB202', 'GJCB205', 'GJCB207', 'GJCB208',
@@ -125,6 +125,21 @@ const RoomAllotment = () => {
         generateRoomReport(singleSessionData, filename);
     };
 
+    const handleDownloadPDF = (date, session) => {
+        try {
+            const singleSessionData = {
+                [date]: {
+                    [session]: sessionData[date][session]
+                }
+            };
+            const filename = `Room_Allotment_${date}_${session}.pdf`;
+            generateRoomPDF(singleSessionData, filename);
+        } catch (error) {
+            console.error("PDF Download Error:", error);
+            alert("Error initiating PDF download.");
+        }
+    };
+
     return (
         <div className="space-y-10 pb-20 font-sans text-retro-dark">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-2 border-retro-dark/10 pb-6">
@@ -226,15 +241,25 @@ const RoomAllotment = () => {
 
                                         <div className="mt-4 flex gap-2 flex-wrap">
                                             {Object.keys(sessionData[date]).map(session => (
-                                                <button
-                                                    key={session}
-                                                    onClick={() => handleDownloadSession(date, session)}
-                                                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase bg-white border-2 border-retro-border text-retro-secondary hover:border-retro-blue hover:text-retro-blue hover:shadow-sm transition-all"
-                                                    title={`Download ${session} Report`}
-                                                >
-                                                    <span>{session}</span>
-                                                    <i className="bi bi-download"></i>
-                                                </button>
+                                                <div key={session} className="flex items-center bg-white border-2 border-retro-border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className="px-3 py-1.5 text-[10px] font-black uppercase text-retro-secondary bg-retro-cream/20 border-r-2 border-retro-border">
+                                                        {session}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDownloadSession(date, session)}
+                                                        className="px-2 py-1.5 text-retro-blue hover:bg-retro-blue hover:text-white transition-colors border-r-2 border-retro-border"
+                                                        title="Download Word Doc"
+                                                    >
+                                                        <i className="bi bi-file-word-fill"></i>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDownloadPDF(date, session)}
+                                                        className="px-2 py-1.5 text-retro-red hover:bg-retro-red hover:text-white transition-colors"
+                                                        title="Download PDF"
+                                                    >
+                                                        <i className="bi bi-file-pdf-fill"></i>
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
