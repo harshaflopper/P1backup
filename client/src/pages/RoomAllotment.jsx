@@ -281,6 +281,50 @@ const RoomAllotment = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Department Downloads Section */}
+                {Object.keys(sessionData).length > 0 && (
+                    <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden mt-8">
+                        <div className="px-6 py-4 border-b-2 border-retro-dark bg-retro-cream/30 flex justify-between items-center">
+                            <h4 className="font-black text-retro-dark flex items-center gap-3 uppercase tracking-tight">
+                                Department Downloads
+                            </h4>
+                        </div>
+                        <div className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {(() => {
+                                    // Extract unique departments
+                                    const departments = new Set();
+                                    Object.values(sessionData).forEach(sessions => {
+                                        Object.values(sessions).forEach(session => {
+                                            if (session.deputies) session.deputies.forEach(d => departments.add(d.department || d.dept));
+                                            if (session.invigilators) session.invigilators.forEach(i => departments.add(i.dept));
+                                        });
+                                    });
+                                    return Array.from(departments).sort().map((dept, idx) => (
+                                        <div key={idx} className="p-4 rounded-xl border-2 border-retro-dark bg-white hover:shadow-md transition-all">
+                                            <h5 className="font-bold text-retro-dark mb-3 text-center uppercase text-sm truncate" title={dept}>{dept || 'Unknown'}</h5>
+                                            <div className="flex gap-2 justify-center">
+                                                <button
+                                                    onClick={() => generateDepartmentReport(sessionData, dept)}
+                                                    className="px-3 py-1.5 bg-retro-blue text-white rounded text-xs font-bold hover:bg-retro-blue/90 border-2 border-retro-dark shadow-sm uppercase transition-transform active:scale-95"
+                                                >
+                                                    Word
+                                                </button>
+                                                <button
+                                                    onClick={() => generateDepartmentPDF(sessionData, dept)}
+                                                    className="px-3 py-1.5 bg-retro-red text-white rounded text-xs font-bold hover:bg-retro-red/90 border-2 border-retro-dark shadow-sm uppercase transition-transform active:scale-95"
+                                                >
+                                                    PDF
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

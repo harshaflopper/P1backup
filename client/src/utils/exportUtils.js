@@ -215,7 +215,7 @@ export const generateRoomReport = (sessionData, customFilename) => {
     saveAs(blob, filename);
 };
 
-export const generateDepartmentReport = (sessionData) => {
+export const generateDepartmentReport = (sessionData, targetDept = null) => {
     // 1. Extract all unique dates and sessions
     const dates = Object.keys(sessionData).sort();
     if (dates.length === 0) return;
@@ -277,7 +277,11 @@ export const generateDepartmentReport = (sessionData) => {
     // 3. Generate HTML
     let docContent = '';
 
-    Object.keys(deptData).sort().forEach((dept, index) => {
+    const departmentsToExport = targetDept ? [targetDept] : Object.keys(deptData).sort();
+
+    departmentsToExport.forEach((dept, index) => {
+        if (!deptData[dept]) return;
+
         const fullFacultyList = Object.values(deptData[dept]);
         const deputyList = fullFacultyList.filter(f => f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
         const invigilatorList = fullFacultyList.filter(f => !f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
@@ -399,7 +403,10 @@ export const generateDepartmentReport = (sessionData) => {
     `;
 
     const blob = new Blob([htmlContent], { type: 'application/msword' });
-    saveAs(blob, `Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.doc`);
+    const filename = targetDept
+        ? `${targetDept}_Exam_Allotment_${new Date().toISOString().split('T')[0]}.doc`
+        : `Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.doc`;
+    saveAs(blob, filename);
 };
 
 export const generateRoomPDF = (sessionData, customFilename) => {
@@ -496,7 +503,7 @@ export const generateRoomPDF = (sessionData, customFilename) => {
     }
 };
 
-export const generateDepartmentPDF = (sessionData) => {
+export const generateDepartmentPDF = (sessionData, targetDept = null) => {
     try {
         // 1. Extract all unique dates and sessions
         const dates = Object.keys(sessionData).sort();
@@ -548,7 +555,11 @@ export const generateDepartmentPDF = (sessionData) => {
         const doc = new jsPDF({ orientation: 'landscape' });
         let isFirstPage = true;
 
-        Object.keys(deptData).sort().forEach((dept) => {
+        const departmentsToExport = targetDept ? [targetDept] : Object.keys(deptData).sort();
+
+        departmentsToExport.forEach((dept) => {
+            if (!deptData[dept]) return;
+
             const fullFacultyList = Object.values(deptData[dept]);
             const deputyList = fullFacultyList.filter(f => f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
             const invigilatorList = fullFacultyList.filter(f => !f.isDeputy).sort((a, b) => a.name.localeCompare(b.name));
@@ -657,7 +668,10 @@ export const generateDepartmentPDF = (sessionData) => {
             renderTable(invigilatorList, 'FACULTY / INVIGILATORS');
         });
 
-        doc.save(`Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.pdf`);
+        const filename = targetDept
+            ? `${targetDept}_Exam_Allotment_${new Date().toISOString().split('T')[0]}.pdf`
+            : `Dept_Wise_Allotment_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
 
     } catch (error) {
         console.error("Dept PDF Generation Error:", error);
