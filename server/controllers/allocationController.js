@@ -86,13 +86,27 @@ const syncFacultyDuties = async () => {
 // @access  Public
 exports.saveAllocations = async (req, res) => {
     try {
-        const sessionData = req.body; // Full structure: { "YYYY-MM-DD": { "morning": { ... }, "afternoon": { ... } } }
+        const { password, ...sessionData } = req.body; // Extract password, rest is date-keyed data
+
+        if (!password) {
+            return res.status(400).json({ msg: 'Password is required to confirm allotment' });
+        }
+
+        // Middleware strips password, so re-fetch user
+        const user = await require('../models/User').findById(req.user._id);
+        if (!user || !(await user.matchPassword(password))) {
+            return res.status(401).json({ msg: 'Invalid Password. Save failed.' });
+        }
+
         console.log('Received session data for save:', Object.keys(sessionData));
 
         const ops = [];
 
         // Iterate and prepare bulk operations or individual upserts
         for (const date in sessionData) {
+            // Skip if key is somehow not a date or if it's empty (though ...rest handles that mostly)
+            if (typeof sessionData[date] !== 'object') continue;
+
             for (const session in sessionData[date]) {
                 const data = sessionData[date][session];
 

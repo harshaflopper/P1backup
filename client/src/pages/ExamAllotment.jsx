@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useExamAllocation from '../hooks/useExamAllocation';
 import { generateDeputyReport } from '../utils/exportUtils';
+import PasswordConfirmationModal from '../components/PasswordConfirmationModal';
+import StatusModal from '../components/StatusModal';
 
 const ExamAllotment = () => {
     const [faculty, setFaculty] = useState([]);
@@ -101,13 +103,19 @@ const ExamAllotment = () => {
         alert('Allocation complete!');
     };
 
-    const handleSaveAllotment = async () => {
-        const pin = prompt("Enter Administrator PIN to Confirm Allotment:");
-        if (pin !== "1234") {
-            alert("Incorrect PIN. Action cancelled.");
-            return;
-        }
+    const [statusModal, setStatusModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'success'
+    });
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [saveLoading, setSaveLoading] = useState(false);
 
+    const handleSaveAllotment = async (password) => {
+        if (!password) return;
+
+        setSaveLoading(true);
         try {
             // Construct sessionData from allocations and config
             const sessionData = {};
@@ -127,12 +135,31 @@ const ExamAllotment = () => {
                 });
             });
 
-            console.log('Saving sessionData:', sessionData);
-            await axios.post('/api/allocations', sessionData);
-            alert('Allotment Confirmed and Saved successfully!');
+            // Include password in payload
+            const payload = { ...sessionData, password };
+
+            console.log('Saving sessionData...');
+            await axios.post('/api/allocations', payload);
+
+            setIsConfirmModalOpen(false);
+            setStatusModal({
+                isOpen: true,
+                title: 'Success!',
+                message: 'Allotment Confirmed and Saved successfully!',
+                type: 'success'
+            });
+
         } catch (err) {
             console.error(err);
-            alert('Failed to save to database.');
+            const errMsg = err.response?.data?.msg || "Failed to save to database.";
+            setStatusModal({
+                isOpen: true,
+                title: 'Error',
+                message: errMsg,
+                type: 'error'
+            });
+        } finally {
+            setSaveLoading(false);
         }
     };
 
@@ -406,7 +433,7 @@ const ExamAllotment = () => {
                             </button>
                             <button
                                 className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
-                                onClick={handleSaveAllotment}
+                                onClick={() => setIsConfirmModalOpen(true)}
                                 disabled={Object.keys(allocations).length === 0}
                             >
                                 Confirm Allotment
@@ -558,6 +585,27 @@ const ExamAllotment = () => {
                     </div>
                 </div>
             )}
+            {/* Password Confirmation Modal */}
+            <PasswordConfirmationModal
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleSaveAllotment}
+                loading={saveLoading}
+                title="Save & Publish"
+                message="This will save the current allocation to the database, effectively publishing it. Please enter your administrator password to confirm."
+                confirmText="Save Allotment"
+                confirmColor="bg-emerald-600"
+                icon="bi-cloud-upload-fill"
+            />
+
+            {/* Status Modal */}
+            <StatusModal
+                isOpen={statusModal.isOpen}
+                onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+                title={statusModal.title}
+                message={statusModal.message}
+                type={statusModal.type}
+            />
         </div>
     );
 };
