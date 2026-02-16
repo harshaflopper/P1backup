@@ -32,7 +32,7 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/room-allotment" className={navLinkClass}>
                     <i className="bi bi-building-fill"></i>
-                    <span>Rooms</span>
+                    <span>Reports</span>
                 </NavLink>
             </div>
 
