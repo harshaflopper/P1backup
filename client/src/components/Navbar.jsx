@@ -37,8 +37,17 @@ const Navbar = () => {
             </div>
 
             {/* 3. User Profile (Right) */}
-            {/* 3. User Profile (Right) - Removed as per request */}
-            <div className="w-10"></div>
+            {/* 3. Settings (Right) */}
+            <div className="flex items-center">
+                <NavLink to="/settings" className={({ isActive }) =>
+                    `w-10 h-10 flex items-center justify-center rounded-full border-2 border-retro-dark transition-all duration-300 ${isActive
+                        ? 'bg-retro-dark text-white shadow-paper'
+                        : 'bg-retro-white text-retro-dark hover:bg-retro-blue hover:text-white hover:shadow-paper hover:translate-y-[-2px]'
+                    }`
+                }>
+                    <i className="bi bi-gear-fill text-lg"></i>
+                </NavLink>
+            </div>
         </nav>
     );
 };

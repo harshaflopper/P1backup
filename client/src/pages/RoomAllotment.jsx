@@ -223,29 +223,7 @@ const RoomAllotment = () => {
         }
     };
 
-    const handleClearDB = async () => {
-        const pin = prompt("Enter Administrator PIN to DELETE all records:");
-        if (pin !== "1234") {
-            alert("Incorrect PIN. Action cancelled.");
-            return;
-        }
 
-        if (!confirm('CRITICAL WARNING: This will permanently DELETE ALL exam and room allocation data from the database. This cannot be undone. Are you sure?')) {
-            return;
-        }
-
-        try {
-            const res = await axios.delete('/api/allocations');
-            alert(res.data.msg);
-            setSessionData({}); // Clear local state too
-            setIsManualMode(true); // Clearing DB enables manual mode for fresh start
-            setStatus('Database cleared.');
-        } catch (err) {
-            console.error('Clear DB Error:', err);
-            const errMsg = err.response?.data?.msg || err.response?.data || err.message;
-            alert(`Error clearing database: ${errMsg}`);
-        }
-    };
 
     const handleDownloadSession = (date, session) => {
         const singleSessionData = {
@@ -276,7 +254,7 @@ const RoomAllotment = () => {
         <div className="space-y-10 pb-20 font-sans text-retro-dark">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b-2 border-retro-dark/10 pb-6">
                 <div>
-                    <h1 className="text-3xl font-black text-retro-dark tracking-tight uppercase">Room Allotment</h1>
+                    <h1 className="text-3xl font-black text-retro-dark tracking-tight uppercase">Reports download (Dept and Date wise)</h1>
                     <p className="text-retro-secondary text-sm font-bold mt-1 tracking-wide uppercase">Upload exam schedules to allocate rooms.</p>
                 </div>
             </div>
@@ -350,12 +328,7 @@ const RoomAllotment = () => {
                         >
                             Dept PDF
                         </button>
-                        <button
-                            className="bg-retro-red hover:bg-retro-red/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
-                            onClick={handleClearDB}
-                        >
-                            Delete Allocation
-                        </button>
+
                     </div>
                 </div>
             </div>

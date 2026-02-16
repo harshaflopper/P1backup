@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import FacultyManagement from './pages/FacultyManagement';
 import ExamAllotment from './pages/ExamAllotment';
 import RoomAllotment from './pages/RoomAllotment';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<FacultyManagement />} />
           <Route path="/exam-allotment" element={<ExamAllotment />} />
           <Route path="/room-allotment" element={<RoomAllotment />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </Router>
