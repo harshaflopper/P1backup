@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const allocationController = require('../controllers/allocationController');
+const { protect, admin } = require('../middleware/authMiddleware');
 
 // @route   POST /api/allocations
 // @desc    Save bulk allocations
-// @access  Public
-router.post('/', allocationController.saveAllocations);
+// @access  Private/Admin
+router.post('/', protect, admin, allocationController.saveAllocations);
 
 // @route   DELETE /api/allocations
 // @desc    Clear all allocations
-// @access  Public
-router.delete('/', allocationController.clearAllocations);
+// @access  Private/Admin
+router.delete('/', protect, admin, allocationController.clearAllocations);
 
 // @route   GET /api/allocations
 // @desc    Get all allocations

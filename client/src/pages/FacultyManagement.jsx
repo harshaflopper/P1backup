@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 import FacultyTable from '../components/FacultyTable';
 import AddFacultyModal from '../components/AddFacultyModal';
 import FacultyDutiesModal from '../components/FacultyDutiesModal';
 import { generateDepartmentReport } from '../utils/exportUtils';
 
 const FacultyManagement = () => {
+    const { user } = useContext(AuthContext);
     const [faculty, setFaculty] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -148,20 +150,24 @@ const FacultyManagement = () => {
                 </div>
 
                 <div className="flex gap-4 relative z-10">
-                    <button
-                        onClick={handleExportAllocations}
-                        className="flex items-center gap-3 px-5 py-3 rounded-lg bg-white border-2 border-retro-border text-retro-secondary font-bold hover:border-retro-blue hover:text-retro-blue transition-all text-xs uppercase tracking-wider"
-                    >
-                        <i className="bi bi-cloud-arrow-down-fill text-lg"></i>
-                        <span>Dept Doc</span>
-                    </button>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-3 px-6 py-3 rounded-lg bg-retro-blue text-white font-bold shadow-paper hover:translate-y-[-2px] hover:shadow-lg transition-all border-2 border-retro-dark text-xs uppercase tracking-wider"
-                    >
-                        <i className="bi bi-plus-lg text-lg"></i>
-                        <span>New Faculty</span>
-                    </button>
+                    {user && user.role === 'admin' && (
+                        <>
+                            <button
+                                onClick={handleExportAllocations}
+                                className="flex items-center gap-3 px-5 py-3 rounded-lg bg-white border-2 border-retro-border text-retro-secondary font-bold hover:border-retro-blue hover:text-retro-blue transition-all text-xs uppercase tracking-wider"
+                            >
+                                <i className="bi bi-cloud-arrow-down-fill text-lg"></i>
+                                <span>Dept Doc</span>
+                            </button>
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="flex items-center gap-3 px-6 py-3 rounded-lg bg-retro-blue text-white font-bold shadow-paper hover:translate-y-[-2px] hover:shadow-lg transition-all border-2 border-retro-dark text-xs uppercase tracking-wider"
+                            >
+                                <i className="bi bi-plus-lg text-lg"></i>
+                                <span>New Faculty</span>
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 

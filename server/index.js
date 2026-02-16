@@ -28,8 +28,11 @@ app.get('/', (req, res) => {
 // Import Routes
 const facultyRoutes = require('./routes/facultyRoutes');
 const allocationRoutes = require('./routes/allocationRoutes');
+const authRoutes = require('./routes/authRoutes');
+
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/allocations', allocationRoutes);
+app.use('/api/auth', authRoutes);
 
 // Force restart for Department Fix v2 (LEAN query)
 app.listen(PORT, () => {

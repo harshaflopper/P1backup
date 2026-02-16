@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import AuthContext from '../context/AuthContext';
 
 const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
+    const { user } = useContext(AuthContext);
+
     if (faculty.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-80 rounded-xl bg-retro-white border-2 border-dashed border-retro-border">
@@ -86,19 +89,29 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
 
                                     {/* Status Toggle */}
                                     <td className="px-6 py-4 text-center">
-                                        <button
-                                            onClick={() => onToggleStatus(fac._id)}
-                                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${fac.isActive
-                                                ? 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200'
-                                                : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
-                                                }`}
-                                        >
-                                            <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>
-                                            {fac.isActive ? 'Active' : 'Offline'}
-                                        </button>
+                                        {user && user.role === 'admin' ? (
+                                            <button
+                                                onClick={() => onToggleStatus(fac._id)}
+                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${fac.isActive
+                                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-600 hover:bg-emerald-200'
+                                                    : 'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
+                                                    }`}
+                                            >
+                                                <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>
+                                                {fac.isActive ? 'Active' : 'Offline'}
+                                            </button>
+                                        ) : (
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border-2 ${fac.isActive
+                                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                                : 'bg-slate-50 text-slate-500 border-slate-200'
+                                                }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${fac.isActive ? 'bg-emerald-600' : 'bg-slate-400'}`}></span>
+                                                {fac.isActive ? 'Active' : 'Offline'}
+                                            </span>
+                                        )}
                                     </td>
 
-                                    {/* Actions (Text Buttons) */}
+                                    {/* Actions */}
                                     <td className="px-8 py-4 pr-10 text-right">
                                         <div className="flex items-center justify-end gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
                                             <button
@@ -107,12 +120,15 @@ const FacultyTable = ({ faculty, onToggleStatus, onDelete, onViewDuties }) => {
                                             >
                                                 DUTIES
                                             </button>
-                                            <button
-                                                onClick={() => onDelete(fac._id)}
-                                                className="px-3 py-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
-                                            >
-                                                DELETE
-                                            </button>
+
+                                            {user && user.role === 'admin' && (
+                                                <button
+                                                    onClick={() => onDelete(fac._id)}
+                                                    className="px-3 py-1.5 rounded-md bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105"
+                                                >
+                                                    DELETE
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

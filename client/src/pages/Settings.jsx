@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import axios from 'axios';
+import AuthContext from '../context/AuthContext';
 
 const Settings = () => {
+    const { logout } = useContext(AuthContext);
 
     const handleClearDB = async () => {
         const pin = prompt("Enter Administrator PIN to DELETE all records:");
@@ -53,6 +55,20 @@ const Settings = () => {
                                 Delete Allocation Data
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                {/* Account Actions */}
+                <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
+                    <div className="p-6">
+                        <h3 className="text-xl font-black text-retro-dark mb-4 uppercase tracking-tight">Account</h3>
+                        <button
+                            onClick={logout}
+                            className="w-full bg-retro-dark text-retro-white hover:bg-black px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
+                        >
+                            <i className="bi bi-box-arrow-right"></i>
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>
