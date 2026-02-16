@@ -36,7 +36,13 @@ const facultySchema = new mongoose.Schema({
     totalAllotments: {
         type: Number,
         default: 0
-    }
+    },
+    duties: [{
+        date: String,
+        session: String,
+        room: String,
+        role: String // 'Invigilator' or 'Deputy'
+    }]
 }, {
     timestamps: true
 });

@@ -2,6 +2,85 @@ const SessionData = require('../models/SessionData');
 const SessionConfig = require('../models/SessionConfig'); // Keeping for legacy or if needed, but SessionData supersedes it
 const AllocationDetail = require('../models/AllocationDetail'); // Keeping for legacy reference or cleanup
 
+const Faculty = require('../models/Faculty');
+
+// Helper to sync duties to Faculty profiles
+const syncFacultyDuties = async () => {
+    try {
+        console.log('Syncing Faculty Duties...');
+        const allSessions = await SessionData.find().lean();
+        const allFaculty = await Faculty.find().lean();
+
+        // Normalizer
+        const normalize = (s) => (s || '').replace(/^dr\.|^prof\./i, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+
+        // 1. Map normalized names/initials to Faculty IDs
+        const facultyMap = {};
+        allFaculty.forEach(f => {
+            const id = f._id.toString();
+            if (f.initials) facultyMap[normalize(f.initials)] = id;
+            if (f.name) facultyMap[normalize(f.name)] = id;
+        });
+
+        // 2. Aggregate duties per faculty
+        const facultyUpdates = {}; // { facultyId: { duties: [], count: 0 } }
+
+        // Initialize for all faculty to ensure we clear old duties if they are removed
+        allFaculty.forEach(f => {
+            facultyUpdates[f._id.toString()] = { duties: [], count: 0 };
+        });
+
+        allSessions.forEach(doc => {
+            const { date, session, data } = doc;
+
+            const processPerson = (person, role) => {
+                if (!person.name && !person.initials) return;
+
+                const normName = normalize(person.name);
+                const normInitials = normalize(person.initials);
+
+                // Try to find faculty ID
+                const fid = facultyMap[normName] || facultyMap[normInitials];
+
+                if (fid) {
+                    facultyUpdates[fid].duties.push({
+                        date,
+                        session,
+                        room: person.room || 'Unassigned',
+                        role
+                    });
+                    facultyUpdates[fid].count++;
+                }
+            };
+
+            if (data.deputies) data.deputies.forEach(p => processPerson(p, 'Deputy'));
+            if (data.invigilators) data.invigilators.forEach(p => processPerson(p, 'Invigilator'));
+        });
+
+        // 3. Bulk Write Updates
+        const ops = Object.keys(facultyUpdates).map(fid => ({
+            updateOne: {
+                filter: { _id: fid },
+                update: {
+                    $set: {
+                        duties: facultyUpdates[fid].duties,
+                        totalAllotments: facultyUpdates[fid].count
+                    }
+                }
+            }
+        }));
+
+        if (ops.length > 0) {
+            await Faculty.bulkWrite(ops);
+            console.log(`Synced duties for ${ops.length} faculty members.`);
+        }
+
+    } catch (err) {
+        console.error('Error syncing faculty duties:', err);
+        // Don't throw, just log. This is a side effect.
+    }
+};
+
 // @desc    Save bulk allocations (SessionData Document Approach)
 // @route   POST /api/allocations
 // @access  Public
@@ -36,6 +115,9 @@ exports.saveAllocations = async (req, res) => {
         if (ops.length > 0) {
             await SessionData.bulkWrite(ops);
         }
+
+        // Trigger Sync
+        await syncFacultyDuties();
 
         res.json({ msg: 'Allocations saved successfully (Document Mode)', stats: { sessions: ops.length } });
 
@@ -136,6 +218,9 @@ exports.clearAllocations = async (req, res) => {
         await AllocationDetail.deleteMany({});
         await SessionConfig.deleteMany({});
 
+        // Clear Faculty Duties
+        await Faculty.updateMany({}, { $set: { duties: [], totalAllotments: 0 } });
+
         res.json({ msg: 'Database cleared successfully (All Sessions Removed)' });
     } catch (err) {
         console.error(err.message);
@@ -147,18 +232,19 @@ exports.clearAllocations = async (req, res) => {
 // @route   GET /api/allocations/faculty/:id
 // @access  Public
 exports.getFacultyAllocations = async (req, res) => {
-    // This is harder with Document Store. We need to query inside the 'data' object.
-    // MongoDB supports this well.
     try {
         const { id } = req.params;
-        // id might be '60d...', we need to search in deputies.id or invigilators.id (nested)
-        // Or simply search by text if we stored names. 
-        // The client currently might not use this heavily or we can adapt.
-        // For now, let's return empty or implement a basic scan if critical.
-        // Given user focus is on Reports/Downloads, this might be secondary.
-        // Let's implement a text search on the JSON.
+        const faculty = await Faculty.findById(id);
 
-        res.json([]); // Placeholder for now to prevent crash
+        if (!faculty) {
+            return res.status(404).json({ msg: 'Faculty not found' });
+        }
+
+        console.log(`DEBUG API: Fetching duties for ${faculty.name}`);
+        console.log(`DEBUG API: Duties count: ${faculty.duties ? faculty.duties.length : 'undefined'}`);
+        // console.log(`DEBUG API: Full object:`, faculty);
+
+        res.json(faculty.duties || []);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

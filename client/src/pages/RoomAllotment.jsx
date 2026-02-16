@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { parseSessionData } from '../utils/documentParser';
 import { generateRoomReport, generateDepartmentReport, generateRoomPDF, generateDepartmentPDF } from '../utils/exportUtils';
@@ -18,6 +18,7 @@ const RoomAllotment = () => {
     const [sessionData, setSessionData] = useState({});
     const [status, setStatus] = useState('');
 
+
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -32,22 +33,42 @@ const RoomAllotment = () => {
         reader.readAsText(file);
     };
 
-    const handleLoadFromDB = async () => {
+    const handleLoadFromDB = async (isAutoLoad = false) => {
         try {
             const res = await axios.get('/api/allocations');
             const data = res.data;
-            if (Object.keys(data).length === 0) {
-                alert('No data found in database.');
+            if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+                if (!isAutoLoad) alert('No data found in database.');
                 return;
             }
-            setSessionData(data);
-            setStatus(`Loaded data for ${Object.keys(data).length} dates from DB.`);
-            alert('Data loaded from Database!');
+
+            // Validate keys (dates) and values (sessions)
+            const validData = Object.keys(data).reduce((acc, key) => {
+                if (data[key] && typeof data[key] === 'object' && Object.keys(data[key]).length > 0) {
+                    acc[key] = data[key];
+                }
+                return acc;
+            }, {});
+
+            if (Object.keys(validData).length === 0) {
+                console.warn('Data loaded but contained no valid session objects', data);
+                if (!isAutoLoad) alert('No valid session data found.');
+                return;
+            }
+
+            console.log('Loaded valid data from DB:', validData);
+            setSessionData(validData);
+            setStatus(`Loaded data for ${Object.keys(validData).length} dates from DB.`);
+            if (!isAutoLoad) alert('Data loaded from Database!');
         } catch (err) {
             console.error('Load Error:', err);
-            alert('Failed to load data from database.');
+            if (!isAutoLoad) alert('Failed to load data from database.');
         }
     };
+
+    useEffect(() => {
+        handleLoadFromDB(true); // Auto-load on mount, with safety checks
+    }, []);
 
     const handleRandomize = async () => {
         // AUTOMATION: Validate -> PIN -> Randomize -> Save (Upsert)
@@ -250,38 +271,27 @@ const RoomAllotment = () => {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="max-w-xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Upload Card */}
                 <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
-                    <div className="p-10 text-center">
-                        <div className="w-24 h-24 bg-retro-cream rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-retro-dark shadow-sm">
-                            <i className="bi bi-cloud-upload text-4xl text-retro-dark"></i>
-                        </div>
-                        <h3 className="text-2xl font-black text-retro-dark mb-2 uppercase tracking-tight">Upload Exam Schedule</h3>
-                        <p className="text-retro-secondary mb-8 max-w-md mx-auto font-bold text-sm">Drag and drop your HTML/DOC file here to load session data and begin the allotment process.</p>
+                    <div className="p-6 text-center">
+                        <h3 className="text-xl font-black text-retro-dark mb-1 uppercase tracking-tight">Upload document file</h3>
+                        <p className="text-retro-secondary mb-6 max-w-sm mx-auto font-bold text-xs uppercase tracking-wide">Drag & Drop HTML/DOC file to load session data</p>
 
-                        <div className="relative inline-block w-full max-w-md group">
+                        <div className="relative inline-block w-full max-w-sm group">
                             <input
                                 type="file"
                                 accept=".html,.htm,.doc,.docx"
                                 onChange={handleFileUpload}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
-                            <div className="flex items-center justify-center w-full px-6 py-5 border-2 border-dashed border-retro-secondary/50 rounded-xl bg-retro-cream/20 group-hover:bg-retro-cream/50 group-hover:border-retro-dark transition-all">
-                                <span className="text-retro-dark font-black uppercase tracking-wider text-sm group-hover:scale-105 transition-transform">Choose File</span>
+                            <div className="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-retro-secondary/30 rounded-xl bg-retro-cream/10 group-hover:bg-retro-cream/30 group-hover:border-retro-dark hover:shadow-inner transition-all duration-300">
+                                <i className="bi bi-cloud-arrow-up-fill text-3xl text-retro-dark/50 group-hover:text-retro-dark group-hover:scale-110 transition-all mb-2"></i>
+                                <span className="text-retro-dark font-black uppercase tracking-wider text-xs group-hover:translate-y-[-1px] transition-transform">Choose File</span>
                             </div>
                         </div>
-                        <p className="text-[10px] text-retro-secondary mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
+                        <p className="text-[9px] text-retro-secondary/70 mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
 
-                        <div className="mt-6 pt-6 border-t-2 border-retro-border/50">
-                            <button
-                                onClick={handleLoadFromDB}
-                                className="bg-retro-white text-retro-dark hover:bg-retro-cream px-6 py-3 rounded-lg font-black border-2 border-retro-dark shadow-sm uppercase tracking-wider text-xs flex items-center gap-2 mx-auto"
-                            >
-                                <i className="bi bi-database-down"></i> Load from Database
-                            </button>
-                            <p className="text-[9px] text-retro-secondary mt-2 font-bold uppercase tracking-widest">Load previously saved allocation data</p>
-                        </div>
                     </div>
 
                     <div className="bg-retro-cream/30 px-8 py-6 border-t-2 border-retro-dark flex flex-wrap justify-center gap-4">
@@ -335,9 +345,12 @@ const RoomAllotment = () => {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
 
                 {/* Preview Section */}
-                {Object.keys(sessionData).length > 0 && (
+                {sessionData && typeof sessionData === 'object' && Object.keys(sessionData).length > 0 && (
                     <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
                         <div className="px-6 py-4 border-b-2 border-retro-dark bg-retro-cream/30 flex justify-between items-center">
                             <h4 className="font-black text-retro-dark flex items-center gap-3 uppercase tracking-tight">
@@ -394,7 +407,7 @@ const RoomAllotment = () => {
                 )}
 
                 {/* Department Downloads Section */}
-                {Object.keys(sessionData).length > 0 && (
+                {sessionData && typeof sessionData === 'object' && Object.keys(sessionData).length > 0 && (
                     <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden mt-8">
                         <div className="px-6 py-4 border-b-2 border-retro-dark bg-retro-cream/30 flex justify-between items-center">
                             <h4 className="font-black text-retro-dark flex items-center gap-3 uppercase tracking-tight">
