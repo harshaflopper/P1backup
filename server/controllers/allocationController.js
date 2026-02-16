@@ -213,6 +213,19 @@ exports.getAllAllocations = async (req, res) => {
 // @access  Public
 exports.clearAllocations = async (req, res) => {
     try {
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({ msg: 'Password is required to confirm deletion' });
+        }
+
+        // Middleware strips password, so re-fetch user with password
+        const user = await require('../models/User').findById(req.user._id);
+
+        if (!user || !(await user.matchPassword(password))) {
+            return res.status(401).json({ msg: 'Invalid Password. Deletion failed.' });
+        }
+
         await SessionData.deleteMany({});
         // Also clear legacy collections to be clean
         await AllocationDetail.deleteMany({});

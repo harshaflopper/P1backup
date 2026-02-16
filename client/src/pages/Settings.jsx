@@ -1,28 +1,61 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
+import DeleteConfirmationModal from '../components/DeleteConfirmationModal';
+import StatusModal from '../components/StatusModal';
 
 const Settings = () => {
     const { logout } = useContext(AuthContext);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleClearDB = async () => {
-        const pin = prompt("Enter Administrator PIN to DELETE all records:");
-        if (pin !== "1234") {
-            alert("Incorrect PIN. Action cancelled.");
-            return;
-        }
+    // Status Modal State
+    const [statusModal, setStatusModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'success'
+    });
 
-        if (!confirm('CRITICAL WARNING: This will permanently DELETE ALL exam and room allocation data from the database. This cannot be undone. Are you sure?')) {
-            return;
-        }
+    const handleClearDB = async (password) => {
+        if (!password) return;
 
+        setLoading(true);
         try {
-            const res = await axios.delete('/api/allocations');
-            alert(res.data.msg);
+            const res = await axios.delete('/api/allocations', {
+                data: { password } // Send password in body
+            });
+            setIsDeleteModalOpen(false); // Close delete modal
+
+            // Show Success Modal
+            setStatusModal({
+                isOpen: true,
+                title: 'Success!',
+                message: res.data.msg,
+                type: 'success'
+            });
         } catch (err) {
             console.error('Clear DB Error:', err);
             const errMsg = err.response?.data?.msg || err.response?.data || err.message;
-            alert(`Error clearing database: ${errMsg}`);
+
+            // Show Error Modal (keep delete modal open or close? user might want to retry. Let's close it but show error)
+            // Actually, showing error on top of delete modal might be messy with z-index.
+            // Let's close delete modal and show error.
+            // Or better, update error state INSIDE delete modal? 
+            // The request was specifically to replace the "Database cleared successfully" popup.
+            // Let's stick to replacing alerts.
+
+            // If it's a password error, maybe we should keep the delete modal open?
+            // But let's follow the pattern of replacing 'alert'.
+
+            setStatusModal({
+                isOpen: true,
+                title: 'Error',
+                message: errMsg,
+                type: 'error'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -49,7 +82,7 @@ const Settings = () => {
                             </p>
                             <button
                                 className="w-full bg-retro-red hover:bg-retro-red/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
-                                onClick={handleClearDB}
+                                onClick={() => setIsDeleteModalOpen(true)}
                             >
                                 <i className="bi bi-trash-fill"></i>
                                 Delete Allocation Data
@@ -72,6 +105,23 @@ const Settings = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleClearDB}
+                loading={loading}
+            />
+
+            {/* Status Modal (Success/Error) */}
+            <StatusModal
+                isOpen={statusModal.isOpen}
+                onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+                title={statusModal.title}
+                message={statusModal.message}
+                type={statusModal.type}
+            />
         </div>
     );
 };
