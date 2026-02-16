@@ -14,6 +14,75 @@ const ROOM_LIST = [
     'CHL201', 'CHL202', 'CHL203', 'CHL204'
 ];
 
+// Helper to perform allocation logic (Pure function)
+const performAllocation = (data) => {
+    console.log('Starting randomization logic...');
+    const newSessionData = JSON.parse(JSON.stringify(data)); // Deep copy
+
+    Object.keys(newSessionData).forEach(date => {
+        Object.keys(newSessionData[date]).forEach(session => {
+            const sessionInfo = newSessionData[date][session];
+
+            if (sessionInfo.invigilators && sessionInfo.invigilators.length > 0) {
+                // Shuffle Invigilators
+                let invigilators = [...sessionInfo.invigilators];
+                for (let i = invigilators.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [invigilators[i], invigilators[j]] = [invigilators[j], invigilators[i]];
+                }
+
+                // Assign Rooms
+                let numberOfRooms = 0;
+                if (sessionInfo.examInfo?.rooms) {
+                    numberOfRooms = parseInt(sessionInfo.examInfo.rooms);
+                } else if (sessionInfo.rooms) {
+                    numberOfRooms = parseInt(sessionInfo.rooms);
+                }
+
+                console.log(`Date: ${date}, Session: ${session}, Rooms Configured: ${numberOfRooms}`);
+
+                if (numberOfRooms === 0) {
+                    console.warn(`Warning: No rooms configured for ${date} ${session}. All will be Extra.`);
+                }
+
+                let i = 0; // invigilator index
+                let r = 0; // room index (from ROOM_LIST)
+                let allocated = 0;
+
+                while (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
+                    // Allocate up to 5 Rooms
+                    for (let c = 0; c < 5; c++) {
+                        if (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
+                            invigilators[i].room = ROOM_LIST[r];
+                            i++;
+                            r++;
+                            allocated++;
+                        }
+                    }
+
+                    // Allocate 1 Reliever
+                    if (i < invigilators.length && allocated < numberOfRooms) {
+                        invigilators[i].room = 'Reliever';
+                        i++;
+                    }
+                }
+
+                // Mark rest as Extra
+                while (i < invigilators.length) {
+                    invigilators[i].room = 'Extra';
+                    i++;
+                }
+
+                // Renumber Sl No
+                invigilators.forEach((inv, idx) => inv.slNo = idx + 1);
+
+                sessionInfo.invigilators = invigilators;
+            }
+        });
+    });
+    return newSessionData;
+};
+
 const RoomAllotment = () => {
     const [sessionData, setSessionData] = useState({});
     const [status, setStatus] = useState('');
@@ -57,9 +126,43 @@ const RoomAllotment = () => {
             }
 
             console.log('Loaded valid data from DB:', validData);
-            setSessionData(validData);
-            setStatus(`Loaded data for ${Object.keys(validData).length} dates from DB.`);
-            if (!isAutoLoad) alert('Data loaded from Database!');
+
+            // AUTO-ALLOCATION LOGIC
+            // Check if any rooms are already assigned. If NOT, this is "fresh" data from ExamAllotment ---> Auto Allocate.
+            let hasAssignments = false;
+            Object.values(validData).forEach(dateObj => {
+                Object.values(dateObj).forEach(session => {
+                    if (session.invigilators && session.invigilators.some(inv => inv.room && inv.room !== 'Extra' && inv.room !== 'Reliever')) {
+                        hasAssignments = true;
+                    }
+                });
+            });
+
+            if (!hasAssignments) {
+                console.log('Fresh data detected (no rooms assigned). Auto-Allocating...');
+                const allocatedData = performAllocation(validData);
+                setSessionData(allocatedData);
+
+                // Auto-Save
+                try {
+                    console.log('Auto-Saving allocated data...');
+                    await axios.post('/api/allocations', allocatedData);
+                    setStatus(`Loaded, Auto-Allocated & Saved for ${Object.keys(allocatedData).length} dates.`);
+                    // We don't alert on auto-load to avoid annoying popup on refresh, 
+                    // unless user specifically requested "click that (Confirm Allotment) ... db loaded automatically in rooms ... then allocate then save".
+                    // The user said "after db is loded automatically use the allocate then use save button".
+                    // So we do it silently or with a toast? User said "i want it like that".
+                    // Use a subtle notification/console.
+                } catch (saveErr) {
+                    console.error('Auto-Save Failed:', saveErr);
+                    setStatus('Auto-Allocation successful, but Auto-Save failed.');
+                }
+            } else {
+                setSessionData(validData);
+                setStatus(`Loaded data for ${Object.keys(validData).length} dates from DB.`);
+                if (!isAutoLoad) alert('Data loaded from Database!');
+            }
+
         } catch (err) {
             console.error('Load Error:', err);
             if (!isAutoLoad) alert('Failed to load data from database.');
@@ -71,128 +174,16 @@ const RoomAllotment = () => {
     }, []);
 
     const handleRandomize = async () => {
-        // AUTOMATION: Validate -> PIN -> Randomize -> Save (Upsert)
-
-        // 1. PIN Security Check
-        /* 
-         * User requested to disable PIN for allocation to make it smoother ("legacy flow")? 
-         * Or just remove the confirmation dialog. 
-         * "no need of This will reshuffle ... updatind data base" -> Remove the confirm.
-         * The PIN was a security feature requested earlier. I should keep it unless explicitly asked to remove.
-         * "remove this alloactiote rndom and sae to db" -> The user is struggling with steps.
-         * I will remove the confirm dialog about DB update. 
-         * I will keep PIN for now as it prevents accidents, unless user hates it too.
-         * Given user frustration ("ruined legacy"), removing friction is key. 
-         * I'll remove the confirm dialog.
-         */
-
-        // 2. Perform Randomization (Client-side)
-
+        // Automation check removed, reusing helper
         try {
-            // Note: We do NOT clear the DB anymore. We only update.
             console.log('Starting randomization...');
-
-            // 2. Perform Randomization (Client-side)
-            const newSessionData = { ...sessionData };
-
-            Object.keys(newSessionData).forEach(date => {
-                Object.keys(newSessionData[date]).forEach(session => {
-                    const sessionInfo = newSessionData[date][session];
-
-                    if (sessionInfo.invigilators && sessionInfo.invigilators.length > 0) {
-                        // Shuffle Invigilators
-                        let invigilators = [...sessionInfo.invigilators];
-                        for (let i = invigilators.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-                            [invigilators[i], invigilators[j]] = [invigilators[j], invigilators[i]];
-                        }
-
-                        // Assign Rooms
-                        // Robustly get room count. 
-                        // If loaded from DB, it's in examInfo.rooms. If from file, might be top-level rooms? 
-                        // The parser usually puts it in examInfo if standard format, or we need to ensure it's there.
-                        // Let's default to a sensible number if missing to avoid "Extra" for everyone, or alert.
-
-                        let numberOfRooms = 0;
-                        if (sessionInfo.examInfo?.rooms) {
-                            numberOfRooms = parseInt(sessionInfo.examInfo.rooms);
-                        } else if (sessionInfo.rooms) {
-                            numberOfRooms = parseInt(sessionInfo.rooms);
-                        }
-
-                        console.log(`Date: ${date}, Session: ${session}, Rooms Configured: ${numberOfRooms}`);
-
-                        if (numberOfRooms === 0) {
-                            console.warn(`Warning: No rooms configured for ${date} ${session}. All will be Extra.`);
-                        }
-
-                        let i = 0; // invigilator index
-                        let r = 0; // room index (from ROOM_LIST)
-                        let allocated = 0;
-
-                        // Usually per session we start from room 1.
-                        // We need to use the rooms available. 
-                        // Assuming ROOM_LIST is the pool.
-
-                        while (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
-                            // Allocate up to 5 Rooms
-                            for (let c = 0; c < 5; c++) {
-                                if (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
-                                    invigilators[i].room = ROOM_LIST[r];
-                                    i++;
-                                    r++;
-                                    allocated++;
-                                }
-                            }
-
-                            // Allocate 1 Reliever (if we still have rooms to cover or just periodically?)
-                            // User said "5 rooms then reliver".
-                            // Usually Relievers are proportional to rooms.
-                            // If we have allocated 5 rooms, we add a reliever.
-                            // We should check if we have enough invigilators left.
-                            if (i < invigilators.length && allocated < numberOfRooms) {
-                                // Only add reliever if we strictly need interleave, 
-                                // OR do we add reliever regardless of rooms left?
-                                // Usually relievers are needed for the rooms just assigned.
-                                // So yes, assign a reliever.
-                                invigilators[i].room = 'Reliever';
-                                i++;
-                                // We don't increment 'allocated' (room count) or 'r' (room index) for reliever.
-                            }
-                        }
-
-                        // Use remaining invigilators as Extra or more Relievers if config requires?
-                        // If we have explicit 'numberOfRelievers' config, this loop might conflict.
-                        // But user asked for "5 rooms then reliever" pattern specifically.
-                        // I will stick to this pattern as primary. 
-                        // Any remaining configured relievers can be added at the end if needed, 
-                        // but usually this pattern covers it.
-
-                        // Mark rest as Extra
-                        while (i < invigilators.length) {
-                            invigilators[i].room = 'Extra';
-                            i++;
-                        }
-
-                        // Renumber Sl No
-                        invigilators.forEach((inv, idx) => inv.slNo = idx + 1);
-
-                        sessionInfo.invigilators = invigilators;
-                    }
-                });
-            });
-
+            const newSessionData = performAllocation(sessionData);
             console.log('Randomization complete.');
             setSessionData(newSessionData);
-
-            // 3. NO Auto-Save as per user request
-            // const res = await axios.post('/api/allocations', newSessionData);
-
             alert('Room Allocation Complete! (Not saved to DB. Click "Save Allocation" to persist.)');
-
         } catch (err) {
-            console.error('Automation Error:', err);
-            alert('An error occurred during the allocation process. Check console.');
+            console.error('Allocation Error:', err);
+            alert('An error occurred during the allocation process.');
         }
     };
 
