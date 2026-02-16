@@ -116,7 +116,7 @@ const Settings = () => {
                             </h3>
                             <div className="space-y-3 text-[11px] font-medium text-retro-secondary leading-relaxed">
                                 <p>
-                                    This project was conceptualized under the guidance of <span className="font-bold text-retro-dark">Dr. T. N. Chandrika</span>, Department of Electronics and Telecommunication Engineering, whose vision, mentorship, and academic leadership were instrumental in shaping the development of the system.
+                                    This project was conceptualized under the guidance of <span className="font-bold text-retro-dark">Dr. T. N. Chandrika</span>, Department of Electronics and Telecommunication Engineering, Siddaganga Institute of Technology Tumkur. whose vision, mentorship, and academic leadership were instrumental in shaping the development of the system.
                                 </p>
                                 <div className="bg-retro-cream/30 p-3 rounded-lg border border-retro-dark/5">
                                     <p className="font-bold text-retro-dark mb-1">Developed by Students:</p>
@@ -145,7 +145,7 @@ const Settings = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="flex items-center gap-2 text-[11px] font-bold text-retro-secondary">
                                     <i className="bi bi-envelope text-lg opacity-50"></i>
-                                    <span>chandruhasha8@gmail.com</span>
+                                    <span>chandruharsha8@gmail.com</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-[11px] font-bold text-retro-secondary">
                                     <i className="bi bi-phone text-lg opacity-50"></i>
