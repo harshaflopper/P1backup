@@ -31,6 +31,7 @@ const allocationRoutes = require('./routes/allocationRoutes');
 app.use('/api/faculty', facultyRoutes);
 app.use('/api/allocations', allocationRoutes);
 
+// Force restart for Department Fix v2 (LEAN query)
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT} - DEPT FIX v2 ACTIVE`);
 });

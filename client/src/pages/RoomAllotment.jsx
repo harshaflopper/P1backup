@@ -32,63 +32,156 @@ const RoomAllotment = () => {
         reader.readAsText(file);
     };
 
-    const handleRandomize = () => {
-        const newSessionData = { ...sessionData };
+    const handleLoadFromDB = async () => {
+        try {
+            const res = await axios.get('/api/allocations');
+            const data = res.data;
+            if (Object.keys(data).length === 0) {
+                alert('No data found in database.');
+                return;
+            }
+            setSessionData(data);
+            setStatus(`Loaded data for ${Object.keys(data).length} dates from DB.`);
+            alert('Data loaded from Database!');
+        } catch (err) {
+            console.error('Load Error:', err);
+            alert('Failed to load data from database.');
+        }
+    };
 
-        Object.keys(newSessionData).forEach(date => {
-            Object.keys(newSessionData[date]).forEach(session => {
-                const sessionInfo = newSessionData[date][session];
+    const handleRandomize = async () => {
+        // AUTOMATION: Validate -> PIN -> Randomize -> Save (Upsert)
 
-                if (sessionInfo.invigilators && sessionInfo.invigilators.length > 0) {
-                    // Shuffle Invigilators
-                    let invigilators = [...sessionInfo.invigilators];
-                    for (let i = invigilators.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [invigilators[i], invigilators[j]] = [invigilators[j], invigilators[i]];
-                    }
+        // 1. PIN Security Check
+        /* 
+         * User requested to disable PIN for allocation to make it smoother ("legacy flow")? 
+         * Or just remove the confirmation dialog. 
+         * "no need of This will reshuffle ... updatind data base" -> Remove the confirm.
+         * The PIN was a security feature requested earlier. I should keep it unless explicitly asked to remove.
+         * "remove this alloactiote rndom and sae to db" -> The user is struggling with steps.
+         * I will remove the confirm dialog about DB update. 
+         * I will keep PIN for now as it prevents accidents, unless user hates it too.
+         * Given user frustration ("ruined legacy"), removing friction is key. 
+         * I'll remove the confirm dialog.
+         */
 
-                    // Assign Rooms
-                    const numberOfRooms = parseInt(sessionInfo.examInfo.rooms) || 0;
-                    let i = 0; // invigilator index
-                    let r = 0; // room index
-                    let allocated = 0;
+        // 2. Perform Randomization (Client-side)
 
-                    while (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
-                        // Allocate 5 rooms (or remaining)
-                        for (let k = 0; k < 5 && allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length; k++) {
-                            invigilators[i].room = ROOM_LIST[r];
-                            i++;
-                            r++;
-                            allocated++;
+        try {
+            // Note: We do NOT clear the DB anymore. We only update.
+            console.log('Starting randomization...');
+
+            // 2. Perform Randomization (Client-side)
+            const newSessionData = { ...sessionData };
+
+            Object.keys(newSessionData).forEach(date => {
+                Object.keys(newSessionData[date]).forEach(session => {
+                    const sessionInfo = newSessionData[date][session];
+
+                    if (sessionInfo.invigilators && sessionInfo.invigilators.length > 0) {
+                        // Shuffle Invigilators
+                        let invigilators = [...sessionInfo.invigilators];
+                        for (let i = invigilators.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [invigilators[i], invigilators[j]] = [invigilators[j], invigilators[i]];
                         }
 
-                        // Allocate 1 Reliever
-                        if (allocated < numberOfRooms && i < invigilators.length) {
-                            invigilators[i].room = 'Reliever';
+                        // Assign Rooms
+                        // Robustly get room count. 
+                        // If loaded from DB, it's in examInfo.rooms. If from file, might be top-level rooms? 
+                        // The parser usually puts it in examInfo if standard format, or we need to ensure it's there.
+                        // Let's default to a sensible number if missing to avoid "Extra" for everyone, or alert.
+
+                        let numberOfRooms = 0;
+                        if (sessionInfo.examInfo?.rooms) {
+                            numberOfRooms = parseInt(sessionInfo.examInfo.rooms);
+                        } else if (sessionInfo.rooms) {
+                            numberOfRooms = parseInt(sessionInfo.rooms);
+                        }
+
+                        console.log(`Date: ${date}, Session: ${session}, Rooms Configured: ${numberOfRooms}`);
+
+                        if (numberOfRooms === 0) {
+                            console.warn(`Warning: No rooms configured for ${date} ${session}. All will be Extra.`);
+                        }
+
+                        let i = 0; // invigilator index
+                        let r = 0; // room index (from ROOM_LIST)
+                        let allocated = 0;
+
+                        // Usually per session we start from room 1.
+                        // We need to use the rooms available. 
+                        // Assuming ROOM_LIST is the pool.
+
+                        while (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
+                            // Allocate up to 5 Rooms
+                            for (let c = 0; c < 5; c++) {
+                                if (allocated < numberOfRooms && r < ROOM_LIST.length && i < invigilators.length) {
+                                    invigilators[i].room = ROOM_LIST[r];
+                                    i++;
+                                    r++;
+                                    allocated++;
+                                }
+                            }
+
+                            // Allocate 1 Reliever (if we still have rooms to cover or just periodically?)
+                            // User said "5 rooms then reliver".
+                            // Usually Relievers are proportional to rooms.
+                            // If we have allocated 5 rooms, we add a reliever.
+                            // We should check if we have enough invigilators left.
+                            if (i < invigilators.length && allocated < numberOfRooms) {
+                                // Only add reliever if we strictly need interleave, 
+                                // OR do we add reliever regardless of rooms left?
+                                // Usually relievers are needed for the rooms just assigned.
+                                // So yes, assign a reliever.
+                                invigilators[i].room = 'Reliever';
+                                i++;
+                                // We don't increment 'allocated' (room count) or 'r' (room index) for reliever.
+                            }
+                        }
+
+                        // Use remaining invigilators as Extra or more Relievers if config requires?
+                        // If we have explicit 'numberOfRelievers' config, this loop might conflict.
+                        // But user asked for "5 rooms then reliever" pattern specifically.
+                        // I will stick to this pattern as primary. 
+                        // Any remaining configured relievers can be added at the end if needed, 
+                        // but usually this pattern covers it.
+
+                        // Mark rest as Extra
+                        while (i < invigilators.length) {
+                            invigilators[i].room = 'Extra';
                             i++;
                         }
+
+                        // Renumber Sl No
+                        invigilators.forEach((inv, idx) => inv.slNo = idx + 1);
+
+                        sessionInfo.invigilators = invigilators;
                     }
-
-                    // Mark rest as Extra
-                    while (i < invigilators.length) {
-                        invigilators[i].room = 'Extra';
-                        i++;
-                    }
-
-                    // Renumber Sl No
-                    invigilators.forEach((inv, idx) => inv.slNo = idx + 1);
-
-                    sessionInfo.invigilators = invigilators;
-                }
+                });
             });
-        });
 
-        setSessionData(newSessionData);
-        setSessionData(newSessionData);
-        alert('Randomization Complete!');
+            console.log('Randomization complete.');
+            setSessionData(newSessionData);
+
+            // 3. NO Auto-Save as per user request
+            // const res = await axios.post('/api/allocations', newSessionData);
+
+            alert('Room Allocation Complete! (Not saved to DB. Click "Save Allocation" to persist.)');
+
+        } catch (err) {
+            console.error('Automation Error:', err);
+            alert('An error occurred during the allocation process. Check console.');
+        }
     };
 
     const handleSaveToDB = async () => {
+        const pin = prompt("Enter Administrator PIN to Save to Database:");
+        if (pin !== "1234") {
+            alert("Incorrect PIN. Action cancelled.");
+            return;
+        }
+
         try {
             console.log('Sending sessionData:', JSON.stringify(sessionData, null, 2));
             const res = await axios.post('/api/allocations', sessionData);
@@ -101,13 +194,21 @@ const RoomAllotment = () => {
     };
 
     const handleClearDB = async () => {
-        if (!confirm('Are you sure you want to clear ALL allocations from the database? This action cannot be undone.')) {
+        const pin = prompt("Enter Administrator PIN to DELETE all records:");
+        if (pin !== "1234") {
+            alert("Incorrect PIN. Action cancelled.");
+            return;
+        }
+
+        if (!confirm('CRITICAL WARNING: This will permanently DELETE ALL exam and room allocation data from the database. This cannot be undone. Are you sure?')) {
             return;
         }
 
         try {
             const res = await axios.delete('/api/allocations');
             alert(res.data.msg);
+            setSessionData({}); // Clear local state too
+            setStatus('Database cleared.');
         } catch (err) {
             console.error('Clear DB Error:', err);
             const errMsg = err.response?.data?.msg || err.response?.data || err.message;
@@ -171,6 +272,16 @@ const RoomAllotment = () => {
                             </div>
                         </div>
                         <p className="text-[10px] text-retro-secondary mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
+
+                        <div className="mt-6 pt-6 border-t-2 border-retro-border/50">
+                            <button
+                                onClick={handleLoadFromDB}
+                                className="bg-retro-white text-retro-dark hover:bg-retro-cream px-6 py-3 rounded-lg font-black border-2 border-retro-dark shadow-sm uppercase tracking-wider text-xs flex items-center gap-2 mx-auto"
+                            >
+                                <i className="bi bi-database-down"></i> Load from Database
+                            </button>
+                            <p className="text-[9px] text-retro-secondary mt-2 font-bold uppercase tracking-widest">Load previously saved allocation data</p>
+                        </div>
                     </div>
 
                     <div className="bg-retro-cream/30 px-8 py-6 border-t-2 border-retro-dark flex flex-wrap justify-center gap-4">
@@ -180,6 +291,13 @@ const RoomAllotment = () => {
                             disabled={Object.keys(sessionData).length === 0}
                         >
                             Allocate Room
+                        </button>
+                        <button
+                            className="bg-retro-dark hover:bg-retro-dark/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+                            onClick={handleSaveToDB}
+                            disabled={Object.keys(sessionData).length === 0}
+                        >
+                            Save Allocation
                         </button>
                         <button
                             className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
@@ -208,13 +326,6 @@ const RoomAllotment = () => {
                             disabled={Object.keys(sessionData).length === 0}
                         >
                             Dept PDF
-                        </button>
-                        <button
-                            className="bg-retro-dark hover:bg-retro-dark/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
-                            onClick={handleSaveToDB}
-                            disabled={Object.keys(sessionData).length === 0}
-                        >
-                            Save Allocation
                         </button>
                         <button
                             className="bg-retro-red hover:bg-retro-red/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"

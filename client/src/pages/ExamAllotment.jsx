@@ -15,6 +15,7 @@ const ExamAllotment = () => {
 
     useEffect(() => {
         fetchFaculty();
+        restoreStateFromDB();
     }, []);
 
     const fetchFaculty = async () => {
@@ -23,6 +24,60 @@ const ExamAllotment = () => {
             setFaculty(res.data);
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const restoreStateFromDB = async () => {
+        try {
+            const res = await axios.get('/api/allocations');
+            const data = res.data;
+
+            if (data && Object.keys(data).length > 0) {
+                console.log('Restoring state from DB...');
+                const restoredDates = Object.keys(data).sort();
+                const restoredConfig = {};
+                const restoredAllocations = {};
+
+                restoredDates.forEach(date => {
+                    restoredConfig[date] = {};
+                    restoredAllocations[date] = {};
+
+                    ['morning', 'afternoon'].forEach(session => {
+                        if (data[date][session]) {
+                            const sData = data[date][session];
+
+                            // Restore Config
+                            restoredConfig[date][session] = {
+                                rooms: sData.examInfo?.rooms || 0,
+                                relievers: sData.examInfo?.relievers || 0,
+                                roomsPerProf: 7, // Default/Assumed
+                                required: (sData.examInfo?.rooms || 0) + (sData.examInfo?.relievers || 0)
+                            };
+
+                            // Restore Allocations
+                            restoredAllocations[date][session] = {
+                                deputies: sData.deputies || [],
+                                invigilators: sData.invigilators || []
+                            };
+                        } else {
+                            // Default empty config if session missing but date exists
+                            restoredConfig[date][session] = { rooms: 40, roomsPerProf: 7, relievers: 12 };
+                        }
+                    });
+                });
+
+                setDates(restoredDates);
+                setConfig(restoredConfig);
+                setAllocations(restoredAllocations);
+                setStep(3); // Jump to Allocation View
+
+                // Also set Date Range for UI consistency if needed
+                if (restoredDates.length > 0) {
+                    setDateRange({ start: restoredDates[0], end: restoredDates[restoredDates.length - 1] });
+                }
+            }
+        } catch (err) {
+            console.error('Failed to restore state:', err);
         }
     };
 
@@ -44,6 +99,41 @@ const ExamAllotment = () => {
         const result = startAllocation(config, faculty);
         console.log('Allocation result:', result);
         alert('Allocation complete!');
+    };
+
+    const handleSaveAllotment = async () => {
+        const pin = prompt("Enter Administrator PIN to Confirm Allotment:");
+        if (pin !== "1234") {
+            alert("Incorrect PIN. Action cancelled.");
+            return;
+        }
+
+        try {
+            // Construct sessionData from allocations and config
+            const sessionData = {};
+            Object.keys(allocations).forEach(date => {
+                sessionData[date] = {};
+                ['morning', 'afternoon'].forEach(session => {
+                    if (allocations[date][session]) {
+                        sessionData[date][session] = {
+                            examInfo: {
+                                rooms: config[date][session].rooms,
+                                relievers: config[date][session].relievers
+                            },
+                            deputies: allocations[date][session].deputies || [],
+                            invigilators: allocations[date][session].invigilators || []
+                        };
+                    }
+                });
+            });
+
+            console.log('Saving sessionData:', sessionData);
+            await axios.post('/api/allocations', sessionData);
+            alert('Allotment Confirmed and Saved successfully!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save to database.');
+        }
     };
 
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -311,18 +401,22 @@ const ExamAllotment = () => {
                             </div>
                         </div>
                         <div className="flex gap-3">
-                            <button className="bg-retro-white hover:bg-retro-cream text-retro-secondary border-2 border-retro-border px-6 py-3 rounded-lg font-bold shadow-sm transition active:scale-95 uppercase tracking-wider text-xs" onClick={handleAllocate}>
-                                Re-Run
-                            </button>
                             <button className="bg-retro-dark hover:bg-retro-blue text-white px-8 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs" onClick={handleAllocate} disabled={dates.length === 0}>
                                 Allocate
+                            </button>
+                            <button
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs"
+                                onClick={handleSaveAllotment}
+                                disabled={Object.keys(allocations).length === 0}
+                            >
+                                Confirm Allotment
                             </button>
                         </div>
                     </div>
 
                     {/* Quick Actions */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <button className="bg-retro-white hover:bg-retro-red/10 text-retro-red border-2 border-retro-border hover:border-retro-red px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => setAllocations({})}>
+                        <button className="bg-retro-white hover:bg-retro-red/10 text-retro-red border-2 border-retro-border hover:border-retro-red px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => { setAllocations({}); setDates([]); setConfig({}); setStep(1); }}>
                             <i className="bi bi-trash3 group-hover:scale-110 transition-transform"></i> Clear All
                         </button>
                         <button className="col-span-1 lg:col-span-3 bg-retro-white hover:bg-green-50 text-green-700 border-2 border-retro-border hover:border-green-600 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => generateDeputyReport(allocations, config)} disabled={Object.keys(allocations).length === 0}>

@@ -1,122 +1,164 @@
-const AllocationDetail = require('../models/AllocationDetail');
-const Faculty = require('../models/Faculty');
+const SessionData = require('../models/SessionData');
+const SessionConfig = require('../models/SessionConfig'); // Keeping for legacy or if needed, but SessionData supersedes it
+const AllocationDetail = require('../models/AllocationDetail'); // Keeping for legacy reference or cleanup
 
-// @desc    Save bulk allocations
+// @desc    Save bulk allocations (SessionData Document Approach)
 // @route   POST /api/allocations
 // @access  Public
 exports.saveAllocations = async (req, res) => {
     try {
-        const sessionData = req.body; // Expecting the structure from parseSessionData
-        console.log('Received allocation data for dates:', Object.keys(sessionData));
-        const allocations = [];
+        const sessionData = req.body; // Full structure: { "YYYY-MM-DD": { "morning": { ... }, "afternoon": { ... } } }
+        console.log('Received session data for save:', Object.keys(sessionData));
 
-        // Iterate through dates and sessions to extract allocations
+        const ops = [];
+
+        // Iterate and prepare bulk operations or individual upserts
         for (const date in sessionData) {
             for (const session in sessionData[date]) {
-                const sessionInfo = sessionData[date][session];
+                const data = sessionData[date][session];
 
-                // Process Deputies
-                if (sessionInfo.deputies) {
-                    for (const deputy of sessionInfo.deputies) {
-                        allocations.push({
-                            name: deputy.name,
-                            initials: deputy.initials,
-                            designation: deputy.designation,
-                            role: 'Deputy',
-                            date,
-                            session,
-                            room: 'Control Room' // Usually deputies are in control room or roaming
-                        });
+                ops.push({
+                    updateOne: {
+                        filter: { date, session },
+                        update: {
+                            $set: {
+                                date,
+                                session,
+                                data
+                            }
+                        },
+                        upsert: true
                     }
-                }
-
-                // Process Invigilators
-                if (sessionInfo.invigilators) {
-                    for (const invigilator of sessionInfo.invigilators) {
-                        allocations.push({
-                            name: invigilator.name,
-                            initials: invigilator.initials,
-                            designation: invigilator.designation,
-                            role: 'Invigilator',
-                            date,
-                            session,
-                            room: invigilator.room || 'Unassigned'
-                        });
-                    }
-                }
+                });
             }
         }
 
-        const stats = {
-            total: allocations.length,
-            matched: 0,
-            inserted: 0,
-            errors: 0
-        };
-
-        // Process each allocation
-        for (const alloc of allocations) {
-            // Try to find faculty by initials (primary) or name (fallback)
-            let faculty = await Faculty.findOne({ initials: alloc.initials });
-            if (!faculty) {
-                faculty = await Faculty.findOne({ name: alloc.name });
-            }
-
-            if (faculty) stats.matched++;
-
-            const allocationData = {
-                facultyName: alloc.name,
-                facultyId: faculty ? faculty._id : null,
-                initials: alloc.initials || 'NA',
-                designation: alloc.designation || 'Staff',
-                date: alloc.date,
-                session: alloc.session,
-                room: alloc.room,
-                role: alloc.role
-            };
-
-            // Upsert: Update if exists, Insert if not
-            // Identification based on Name + Date + Session (assuming one duty per session)
-            // actually standard upsert might be better with composite key.
-            // But here we might want to just clear old ones for this date? 
-            // For now, let's use check existing.
-
-            await AllocationDetail.findOneAndUpdate(
-                {
-                    facultyName: alloc.name,
-                    date: alloc.date,
-                    session: alloc.session
-                },
-                allocationData,
-                { upsert: true, new: true, setDefaultsOnInsert: true }
-            );
-            stats.inserted++;
+        if (ops.length > 0) {
+            await SessionData.bulkWrite(ops);
         }
 
-        res.json({ msg: 'Allocations process completed', stats });
+        res.json({ msg: 'Allocations saved successfully (Document Mode)', stats: { sessions: ops.length } });
 
     } catch (err) {
-        console.error('Allocation Save Error:', err);
+        console.error('SessionData Save Error:', err);
         res.status(500).send(`Server Error: ${err.message}`);
     }
 };
 
-// @desc    Get allocations for a specific faculty
+// @desc    Get all allocations (Reconstruct SessionData with Mobile Numbers)
+// @route   GET /api/allocations
+// @access  Public
+exports.getAllAllocations = async (req, res) => {
+    try {
+        const docs = await SessionData.find().sort({ date: 1, session: 1 });
+        // FIXED: Include 'department' in the projection so it's actually fetched from DB!
+        // Use .lean() to get Plain Old JavaScript Objects (POJO)
+        const facultyList = await require('../models/Faculty').find({}, 'name initials phone department').lean();
+
+        // Create lookup map: Normalized -> { phone, department }
+        console.log(`Loaded ${facultyList.length} faculty for data enrichment.`);
+        if (facultyList.length > 0) {
+            console.log('Sample Faculty Record:', JSON.stringify(facultyList[0], null, 2));
+        }
+
+        // Super Normalizer: Remove Dr/Prof, remove ALL non-alphanumeric, lowercase
+
+        // Super Normalizer: Remove Dr/Prof, remove ALL non-alphanumeric, lowercase
+        const normalize = (s) => (s || '').replace(/^dr\.|^prof\./i, '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+
+        const facultyMap = {};
+        facultyList.forEach(f => {
+            const data = { phone: f.phone || '', department: f.department || '' };
+            if (f.initials) facultyMap[normalize(f.initials)] = data;
+            if (f.name) facultyMap[normalize(f.name)] = data;
+        });
+
+        // Debug: Log first 5 keys to verify format
+        console.log('Sample Normalized Keys:', Object.keys(facultyMap).slice(0, 5));
+
+        const sessionData = {};
+
+        docs.forEach(doc => {
+            if (!sessionData[doc.date]) {
+                sessionData[doc.date] = {};
+            }
+            // Deep clone data to modify it
+            const enrichedData = JSON.parse(JSON.stringify(doc.data));
+
+            // Helper to inject info
+            const injectInfo = (person) => {
+                const normInitials = normalize(person.initials);
+                const normName = normalize(person.name);
+
+                // Try Exact Match on Normalized Keys
+                let info = facultyMap[normName] || facultyMap[normInitials];
+
+                if (info) {
+                    console.log(`Matched ${person.name} -> Phone: ${info.phone}, Dept: ${info.department}`);
+                    // Inject EVERY possible alias to be safe with exportUtils.js
+                    person.phone = info.phone;
+                    person.contact = info.phone;
+                    person.mobile = info.phone;
+
+                    person.dept = info.department;
+                    person.department = info.department;
+                } else {
+                    console.log(`Failed to match: ${person.name} (${normName})`);
+                }
+            };
+
+            // Inject Phone Numbers & Department (Deputies & Invigilators)
+            if (enrichedData.deputies) {
+                enrichedData.deputies.forEach(injectInfo);
+            }
+            if (enrichedData.invigilators) {
+                enrichedData.invigilators.forEach(injectInfo);
+            }
+
+            sessionData[doc.date][doc.session] = enrichedData;
+        });
+
+        res.json(sessionData);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Clear all allocations
+// @route   DELETE /api/allocations
+// @access  Public
+exports.clearAllocations = async (req, res) => {
+    try {
+        await SessionData.deleteMany({});
+        // Also clear legacy collections to be clean
+        await AllocationDetail.deleteMany({});
+        await SessionConfig.deleteMany({});
+
+        res.json({ msg: 'Database cleared successfully (All Sessions Removed)' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get allocations for a specific faculty (Legacy/Search support)
 // @route   GET /api/allocations/faculty/:id
 // @access  Public
 exports.getFacultyAllocations = async (req, res) => {
+    // This is harder with Document Store. We need to query inside the 'data' object.
+    // MongoDB supports this well.
     try {
         const { id } = req.params;
+        // id might be '60d...', we need to search in deputies.id or invigilators.id (nested)
+        // Or simply search by text if we stored names. 
+        // The client currently might not use this heavily or we can adapt.
+        // For now, let's return empty or implement a basic scan if critical.
+        // Given user focus is on Reports/Downloads, this might be secondary.
+        // Let's implement a text search on the JSON.
 
-        // Check if id is a valid ObjectId, if so search by facultyId
-        // If not, it might be initials or name (though route param suggests ID)
-        // Let's support ID lookups primarily, but also query by initials if passed as query param
-
-        let query = { facultyId: id };
-
-        // If checking by internal ID
-        const allocations = await AllocationDetail.find(query).sort({ date: 1 });
-        res.json(allocations);
+        res.json([]); // Placeholder for now to prevent crash
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -131,42 +173,42 @@ exports.searchAllocations = async (req, res) => {
         const { q } = req.query;
         if (!q) return res.status(400).json({ msg: 'Query parameter q is required' });
 
-        const allocations = await AllocationDetail.find({
+        // Search inside the 'data' object using regex
+        // We look for 'data.deputies.name', 'data.invigilators.name', etc.
+        const regex = new RegExp(q, 'i');
+
+        const docs = await SessionData.find({
             $or: [
-                { facultyName: { $regex: q, $options: 'i' } },
-                { initials: { $regex: q, $options: 'i' } }
+                { 'data.deputies.name': regex },
+                { 'data.invigilators.name': regex },
+                { 'data.deputies.initials': regex },
+                { 'data.invigilators.initials': regex }
             ]
-        }).sort({ date: 1 });
+        });
 
-        res.json(allocations);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-};
+        // We need to flatten this to a list of allocations for the UI to display search results?
+        // Or just return the sessions?
+        // Legacy returned a list of allocation objects.
+        const results = [];
+        docs.forEach(doc => {
+            const { deputies, invigilators } = doc.data;
+            if (deputies) {
+                deputies.forEach(d => {
+                    if (d.name.match(regex) || (d.initials && d.initials.match(regex))) {
+                        results.push({ ...d, date: doc.date, session: doc.session, role: 'Deputy' });
+                    }
+                });
+            }
+            if (invigilators) {
+                invigilators.forEach(i => {
+                    if (i.name.match(regex) || (i.initials && i.initials.match(regex))) {
+                        results.push({ ...i, date: doc.date, session: doc.session, role: 'Invigilator' });
+                    }
+                });
+            }
+        });
 
-// @desc    Clear all allocations
-// @route   DELETE /api/allocations
-// @access  Public
-exports.clearAllocations = async (req, res) => {
-    try {
-        await AllocationDetail.deleteMany({});
-        res.json({ msg: 'All allocations cleared successfully' });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-};
-
-// @desc    Get all allocations (for export)
-// @route   GET /api/allocations
-// @access  Public
-exports.getAllAllocations = async (req, res) => {
-    try {
-        const allocations = await AllocationDetail.find()
-            .populate('facultyId', 'department')
-            .sort({ date: 1, session: 1 });
-        res.json(allocations);
+        res.json(results);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

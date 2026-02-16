@@ -69,8 +69,8 @@ export const generateDeputyReport = (allocations, config) => {
                                     <td style="border: 1px solid #000; padding: 5px;">${dep.name}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${dep.designation}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${dep.initials}</td>
-                                    <td style="border: 1px solid #000; padding: 5px;">${dep.phone || ''}</td>
-                                    <td style="border: 1px solid #000; padding: 5px;">${dep.department}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.phone || dep.contact || dep.mobile || ''}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${dep.department || dep.dept || ''}</td>
                                 </tr>
                             `).join('') : `<tr><td colspan="6" style="border: 1px solid #000; padding: 5px; text-align: center;">No Deputy Superintendents allocated</td></tr>`}
                         </table>
@@ -92,8 +92,8 @@ export const generateDeputyReport = (allocations, config) => {
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.name}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.designation}</td>
                                     <td style="border: 1px solid #000; padding: 5px;">${inv.initials}</td>
-                                    <td style="border: 1px solid #000; padding: 5px;">${inv.phone || ''}</td>
-                                    <td style="border: 1px solid #000; padding: 5px;">${inv.department}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${inv.phone || inv.contact || inv.mobile || ''}</td>
+                                    <td style="border: 1px solid #000; padding: 5px;">${inv.department || inv.dept || ''}</td>
                                     <td style="border: 1px solid #000; padding: 5px;"></td>
                                 </tr>
                             `).join('') : `<tr><td colspan="7" style="border: 1px solid #000; padding: 5px; text-align: center;">No Invigilators allocated</td></tr>`}
