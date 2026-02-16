@@ -86,6 +86,22 @@ const performAllocation = (data) => {
 const RoomAllotment = () => {
     const [sessionData, setSessionData] = useState({});
     const [status, setStatus] = useState('');
+    const [isManualMode, setIsManualMode] = useState(false); // Track if user is manually editing
+
+    // Helper to check if data is already allocated
+    const checkIfAllocated = (data) => {
+        let hasAssignments = false;
+        if (data && typeof data === 'object') {
+            Object.values(data).forEach(dateObj => {
+                Object.values(dateObj).forEach(session => {
+                    if (session.invigilators && session.invigilators.some(inv => inv.room && inv.room !== 'Extra' && inv.room !== 'Reliever')) {
+                        hasAssignments = true;
+                    }
+                });
+            });
+        }
+        return hasAssignments;
+    };
 
 
     const handleFileUpload = (e) => {
@@ -97,6 +113,7 @@ const RoomAllotment = () => {
             const content = event.target.result;
             const parsedData = parseSessionData(content);
             setSessionData(parsedData);
+            setIsManualMode(true); // Uploading file starts manual mode
             setStatus(`Loaded data for ${Object.keys(parsedData).length} dates.`);
         };
         reader.readAsText(file);
@@ -107,6 +124,8 @@ const RoomAllotment = () => {
             const res = await axios.get('/api/allocations');
             const data = res.data;
             if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+                // If DB is empty, default to manual mode false (or true? doesn't matter as data is empty)
+                setIsManualMode(true);
                 if (!isAutoLoad) alert('No data found in database.');
                 return;
             }
@@ -128,20 +147,13 @@ const RoomAllotment = () => {
             console.log('Loaded valid data from DB:', validData);
 
             // AUTO-ALLOCATION LOGIC
-            // Check if any rooms are already assigned. If NOT, this is "fresh" data from ExamAllotment ---> Auto Allocate.
-            let hasAssignments = false;
-            Object.values(validData).forEach(dateObj => {
-                Object.values(dateObj).forEach(session => {
-                    if (session.invigilators && session.invigilators.some(inv => inv.room && inv.room !== 'Extra' && inv.room !== 'Reliever')) {
-                        hasAssignments = true;
-                    }
-                });
-            });
+            const hasAssignments = checkIfAllocated(validData);
 
             if (!hasAssignments) {
                 console.log('Fresh data detected (no rooms assigned). Auto-Allocating...');
                 const allocatedData = performAllocation(validData);
                 setSessionData(allocatedData);
+                setIsManualMode(false); // Auto-allocated data means buttons disabled
 
                 // Auto-Save
                 try {
@@ -159,6 +171,7 @@ const RoomAllotment = () => {
                 }
             } else {
                 setSessionData(validData);
+                setIsManualMode(false); // Loaded pre-allocated data means buttons disabled
                 setStatus(`Loaded data for ${Object.keys(validData).length} dates from DB.`);
                 if (!isAutoLoad) alert('Data loaded from Database!');
             }
@@ -180,6 +193,8 @@ const RoomAllotment = () => {
             const newSessionData = performAllocation(sessionData);
             console.log('Randomization complete.');
             setSessionData(newSessionData);
+            // Manual allocation keeps manual mode active (or sets it true)
+            setIsManualMode(true);
             alert('Room Allocation Complete! (Not saved to DB. Click "Save Allocation" to persist.)');
         } catch (err) {
             console.error('Allocation Error:', err);
@@ -198,6 +213,9 @@ const RoomAllotment = () => {
             console.log('Sending sessionData:', JSON.stringify(sessionData, null, 2));
             const res = await axios.post('/api/allocations', sessionData);
             alert(`Allocations saved! Stats: ${JSON.stringify(res.data.stats)}`);
+            // Saving manual edits -> Do we disable buttons now? 
+            // User requested "when we use manual it shall be available". 
+            // So we KEEP it enabled to allow further edits.
         } catch (err) {
             console.error('Save Error:', err);
             const errMsg = err.response?.data?.msg || err.response?.data || err.message;
@@ -220,6 +238,7 @@ const RoomAllotment = () => {
             const res = await axios.delete('/api/allocations');
             alert(res.data.msg);
             setSessionData({}); // Clear local state too
+            setIsManualMode(true); // Clearing DB enables manual mode for fresh start
             setStatus('Database cleared.');
         } catch (err) {
             console.error('Clear DB Error:', err);
@@ -265,38 +284,40 @@ const RoomAllotment = () => {
             <div className="max-w-xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Upload Card */}
                 <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
-                    <div className="p-6 text-center">
-                        <h3 className="text-xl font-black text-retro-dark mb-1 uppercase tracking-tight">Upload document file</h3>
-                        <p className="text-retro-secondary mb-6 max-w-sm mx-auto font-bold text-xs uppercase tracking-wide">Drag & Drop HTML/DOC file to load session data</p>
+                    {Object.keys(sessionData).length === 0 && (
+                        <div className="p-6 text-center">
+                            <h3 className="text-xl font-black text-retro-dark mb-1 uppercase tracking-tight">Upload document file</h3>
+                            <p className="text-retro-secondary mb-6 max-w-sm mx-auto font-bold text-xs uppercase tracking-wide">Drag & Drop HTML/DOC file to load session data</p>
 
-                        <div className="relative inline-block w-full max-w-sm group">
-                            <input
-                                type="file"
-                                accept=".html,.htm,.doc,.docx"
-                                onChange={handleFileUpload}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div className="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-retro-secondary/30 rounded-xl bg-retro-cream/10 group-hover:bg-retro-cream/30 group-hover:border-retro-dark hover:shadow-inner transition-all duration-300">
-                                <i className="bi bi-cloud-arrow-up-fill text-3xl text-retro-dark/50 group-hover:text-retro-dark group-hover:scale-110 transition-all mb-2"></i>
-                                <span className="text-retro-dark font-black uppercase tracking-wider text-xs group-hover:translate-y-[-1px] transition-transform">Choose File</span>
+                            <div className="relative inline-block w-full max-w-sm group">
+                                <input
+                                    type="file"
+                                    accept=".html,.htm,.doc,.docx"
+                                    onChange={handleFileUpload}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <div className="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-retro-secondary/30 rounded-xl bg-retro-cream/10 group-hover:bg-retro-cream/30 group-hover:border-retro-dark hover:shadow-inner transition-all duration-300">
+                                    <i className="bi bi-cloud-arrow-up-fill text-3xl text-retro-dark/50 group-hover:text-retro-dark group-hover:scale-110 transition-all mb-2"></i>
+                                    <span className="text-retro-dark font-black uppercase tracking-wider text-xs group-hover:translate-y-[-1px] transition-transform">Choose File</span>
+                                </div>
                             </div>
-                        </div>
-                        <p className="text-[9px] text-retro-secondary/70 mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
+                            <p className="text-[9px] text-retro-secondary/70 mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
 
-                    </div>
+                        </div>
+                    )}
 
                     <div className="bg-retro-cream/30 px-8 py-6 border-t-2 border-retro-dark flex flex-wrap justify-center gap-4">
                         <button
                             className="bg-retro-blue hover:bg-retro-blue/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={handleRandomize}
-                            disabled={Object.keys(sessionData).length === 0}
+                            disabled={Object.keys(sessionData).length === 0 || (!isManualMode && checkIfAllocated(sessionData))}
                         >
                             Allocate Room
                         </button>
                         <button
                             className="bg-retro-dark hover:bg-retro-dark/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={handleSaveToDB}
-                            disabled={Object.keys(sessionData).length === 0}
+                            disabled={Object.keys(sessionData).length === 0 || (!isManualMode && checkIfAllocated(sessionData))}
                         >
                             Save Allocation
                         </button>
