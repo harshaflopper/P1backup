@@ -73,7 +73,7 @@ const Login = () => {
 
                 <div className="mt-8 text-center border-t-2 border-retro-dark/10 pt-4">
                     <p className="text-[10px] text-retro-secondary uppercase font-bold tracking-widest">
-                        Default: admin / admin123 | user / user123
+                        Default:user / user123
                     </p>
                 </div>
             </div>
