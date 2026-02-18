@@ -212,6 +212,80 @@ const FacultyManagement = () => {
                         <span className="text-cyan-400 font-bold tracking-[0.3em] uppercase text-xs animate-pulse">Initializing Sonar...</span>
                     </div>
                 </div>
+            ) : !searchTerm && !departmentFilter ? (
+                <div className="max-w-4xl mx-auto mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
+                        <div className="p-8 text-center border-b-2 border-retro-dark bg-retro-cream/20">
+                            <div className="w-20 h-20 bg-retro-blue text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border-2 border-retro-dark text-3xl">
+                                <i className="bi bi-search"></i>
+                            </div>
+                            <h2 className="text-2xl font-black text-retro-dark uppercase tracking-tight mb-2">Ready to Search</h2>
+                            <p className="text-retro-secondary font-bold text-sm max-w-lg mx-auto">
+                                Search for a faculty member by name or select a department from the dropdown to view details.
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 divide-y-2 md:divide-y-0 md:divide-x-2 divide-retro-dark">
+                            <div className="p-8">
+                                <h3 className="text-xs font-black text-retro-dark mb-4 uppercase tracking-wide flex items-center gap-2">
+                                    <i className="bi bi-info-circle-fill text-retro-blue"></i> About The Project
+                                </h3>
+                                <div className="space-y-4 text-xs font-medium text-retro-secondary leading-relaxed text-justify">
+                                    <p>
+                                        This project was conceptualized under the guidance of <span className="font-bold text-retro-dark">Dr. T. N. Chandrika</span>, Department of Electronics and Telecommunication Engineering, Siddaganga Institute of Technology Tumkur. whose vision, mentorship, and academic leadership were instrumental in shaping the development of the system.
+                                    </p>
+                                    <div className="bg-retro-cream/30 p-4 rounded-lg border border-retro-dark/5">
+                                        <p className="font-bold text-retro-dark mb-2">Developed by Students:</p>
+                                        <ul className="space-y-2">
+                                            <li className="flex items-center gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-retro-dark text-white flex items-center justify-center text-[10px] font-bold">H</span>
+                                                <span><span className="font-bold">Harsha T. C.</span> — AI & Data Science <span className="opacity-50 text-[10px]">(1SI24AD064)</span></span>
+                                            </li>
+                                            <li className="flex items-center gap-3">
+                                                <span className="w-6 h-6 rounded-full bg-retro-blue text-white flex items-center justify-center text-[10px] font-bold">D</span>
+                                                <span><span className="font-bold">Durga Prasad</span> — E & T Engineering <span className="opacity-50 text-[10px]">(1SI24ET014)</span></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-8 bg-retro-dark/5">
+                                <h3 className="text-xs font-black text-retro-dark mb-4 uppercase tracking-wide flex items-center gap-2">
+                                    <i className="bi bi-headset text-retro-dark"></i> Contact Support
+                                </h3>
+                                <div className="space-y-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-white border-2 border-retro-border flex items-center justify-center text-retro-blue shadow-sm">
+                                            <i className="bi bi-envelope-fill text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-retro-secondary uppercase tracking-widest mb-0.5">Email Support</p>
+                                            <p className="font-bold text-retro-dark text-sm">chandruharsha8@gmail.com</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-white border-2 border-retro-border flex items-center justify-center text-retro-blue shadow-sm">
+                                            <i className="bi bi-telephone-fill text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-retro-secondary uppercase tracking-widest mb-0.5">Phone Support</p>
+                                            <p className="font-bold text-retro-dark text-sm">73491 17072</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-lg bg-white border-2 border-retro-border flex items-center justify-center text-retro-blue shadow-sm">
+                                            <i className="bi bi-geo-alt-fill text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-retro-secondary uppercase tracking-widest mb-0.5">Location</p>
+                                            <p className="font-bold text-retro-dark text-sm">Telecom Dept. SIT Tumkur</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             ) : (
                 <FacultyTable
                     faculty={filteredFaculty}

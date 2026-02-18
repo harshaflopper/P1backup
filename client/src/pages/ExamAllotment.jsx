@@ -442,11 +442,8 @@ const ExamAllotment = () => {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <button className="bg-retro-white hover:bg-retro-red/10 text-retro-red border-2 border-retro-border hover:border-retro-red px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => { setAllocations({}); setDates([]); setConfig({}); setStep(1); }}>
-                            <i className="bi bi-trash3 group-hover:scale-110 transition-transform"></i> Clear All
-                        </button>
-                        <button className="col-span-1 lg:col-span-3 bg-retro-white hover:bg-green-50 text-green-700 border-2 border-retro-border hover:border-green-600 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => generateDeputyReport(allocations, config)} disabled={Object.keys(allocations).length === 0}>
+                    <div className="w-full">
+                        <button className="w-full bg-retro-white hover:bg-green-50 text-green-700 border-2 border-retro-border hover:border-green-600 px-4 py-4 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-3 group uppercase tracking-wider text-xs" onClick={() => generateDeputyReport(allocations, config)} disabled={Object.keys(allocations).length === 0}>
                             <i className="bi bi-file-earmark-word-fill text-xl group-hover:scale-110 transition-transform"></i> Download Official Allocation Report (.doc)
                         </button>
                     </div>

@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { saveAs } from 'file-saver';
+import { LOGO_BASE64 } from './logoBase64.js';
 
 // Helper to format date
 const formatDate = (dateStr) => {
@@ -9,16 +10,45 @@ const formatDate = (dateStr) => {
 };
 
 // Watermark HTML - using table for better Word compatibility
-// We use the absolute path or a reachable URL. For client-side generation, 
-// linking to the public folder image works if the document renders HTML. 
-// However, Word might block external images or localhost images. 
-// A robust way for local generation is often Base64, but let's try the public URL first as it's simpler.
-// If this fails to show in Word, we might need to convert the image to Base64.
 const getWatermark = () => `
     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -10; pointer-events: none; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-         <img src="http://localhost:5173/logo.png" style="width: 500px; opacity: 0.15; transform: rotate(-15deg);" alt="Watermark" />
+         <img src="${LOGO_BASE64}" style="width: 500px; opacity: 0.15; transform: rotate(-15deg);" alt="Watermark" />
     </div>
 `;
+
+// Helper to add watermark to PDF
+const addWatermarkToPDF = (doc) => {
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        try {
+            // Save graphics state
+            if (doc.saveGraphicsState) doc.saveGraphicsState();
+
+            // Set transparency
+            if (doc.setGState) {
+                // Determine if GState is available on doc or API
+                const GState = doc.GState || (jsPDF.API && jsPDF.API.GState);
+                if (GState) {
+                    doc.setGState(new GState({ opacity: 0.15 }));
+                }
+            }
+
+            const imgWidth = 120;
+            const imgHeight = 120;
+            const x = (doc.internal.pageSize.getWidth() - imgWidth) / 2;
+            const y = (doc.internal.pageSize.getHeight() - imgHeight) / 2;
+
+            doc.addImage(LOGO_BASE64, 'PNG', x, y, imgWidth, imgHeight, undefined, 'FAST', 0);
+
+            // Restore graphics state (resets opacity)
+            if (doc.restoreGraphicsState) doc.restoreGraphicsState();
+
+        } catch (e) {
+            console.warn("Watermark error:", e);
+        }
+    }
+};
 
 export const generateDeputyReport = (allocations, config) => {
     let docContent = '';
@@ -246,7 +276,6 @@ export const generateDepartmentReport = (sessionData, targetDept = null) => {
                 if (!deptData[dept]) deptData[dept] = {};
 
                 // Use Name + Initials as unique key
-                // Clean name to avoid duplicates
                 const cleanName = person.name.trim();
                 const cleanInitials = (person.initials || '').trim();
                 const key = `${cleanName}_${cleanInitials}`;
@@ -256,11 +285,10 @@ export const generateDepartmentReport = (sessionData, targetDept = null) => {
                         name: cleanName,
                         initials: cleanInitials,
                         designation: person.designation || '',
-                        isDeputy: role === 'Deputy', // Track if they are ever a deputy
+                        isDeputy: role === 'Deputy',
                         duties: {}
                     };
                 } else if (role === 'Deputy') {
-                    // Upgrade to deputy if they appear as one
                     deptData[dept][key].isDeputy = true;
                 }
 
@@ -308,7 +336,6 @@ export const generateDepartmentReport = (sessionData, targetDept = null) => {
                         const key = `${date}_${session}`;
                         if (fac.duties[key]) {
                             const sessionLabel = session === 'morning' ? 'AM' : 'PM';
-                            // Try to format date from 'February 16, 2026' to '16-02-2026'
                             let shortDate = date;
                             try {
                                 const d = new Date(date);
@@ -340,32 +367,34 @@ export const generateDepartmentReport = (sessionData, targetDept = null) => {
             `;
         };
 
-        // Explicit page break for all except first
         const pageBreak = index > 0 ? '<br style="page-break-before: always; mso-break-type: section-break;" />' : '';
 
         docContent += `
             ${pageBreak}
-            <div style="padding: 20px; font-family: Arial, sans-serif;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <div style="font-weight: bold; font-size: 16px;">SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR</div>
-                    <div style="font-weight: bold; font-size: 14px; margin-top: 5px;">ALLOTMENT OF INVIGILATION DUTY FOR SEMESTER EXAMINATIONS</div>
-                    <div style="font-weight: bold; font-size: 14px; margin-top: 5px; text-decoration: underline;">${dept.toUpperCase()} - EXAM ALLOTMENT</div>
-                </div>
+            <div style="padding: 20px; font-family: Arial, sans-serif; position: relative; overflow: hidden;">
+                ${getWatermark()}
+                <div style="position: relative; z-index: 10;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-weight: bold; font-size: 16px;">SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR</div>
+                        <div style="font-weight: bold; font-size: 14px; margin-top: 5px;">ALLOTMENT OF INVIGILATION DUTY FOR SEMESTER EXAMINATIONS</div>
+                        <div style="font-weight: bold; font-size: 14px; margin-top: 5px; text-decoration: underline;">${dept.toUpperCase()} - EXAM ALLOTMENT</div>
+                    </div>
 
-                <div style="font-size: 11px; margin-bottom: 20px;">
-                    <div style="font-weight: bold; margin-bottom: 5px;">General Instructions :</div>
-                    <ol style="margin: 0; padding-left: 20px;">
-                        <li style="margin-bottom: 3px;">Deputy chief Supdts are requested to report to duty one hour before the schedule time of the commencement of examinations.</li>
-                        <li style="margin-bottom: 3px;">Room Supdts/Relieving Supdts are requested to report to duty HALF an hour before the scheduled time of the start of the examinations.</li>
-                        <li style="margin-bottom: 3px;">Request letter for mutual exchange of duty should be sent through Heads of the concerned Depts to the principal.</li>
-                        <li style="margin-bottom: 3px;">Mutual exchange is permitted in the same cadre and block transfer of invigilation work is not permitted.</li>
-                        <li style="margin-bottom: 3px;">Deputy Supdts/Relieving Supdts are requested to refer to the circular issued by VTU on the DUTIES and RESPONSIBILITIES and follow the same.</li>
-                    </ol>
-                    <div style="margin-top: 8px; font-style: italic;">Kind cooperation & involvement of every one is solicited for the Smooth conduct of examinations.</div>
+                    <div style="font-size: 11px; margin-bottom: 20px;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">General Instructions :</div>
+                        <ol style="margin: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 3px;">Deputy chief Supdts are requested to report to duty one hour before the schedule time of the commencement of examinations.</li>
+                            <li style="margin-bottom: 3px;">Room Supdts/Relieving Supdts are requested to report to duty HALF an hour before the scheduled time of the start of the examinations.</li>
+                            <li style="margin-bottom: 3px;">Request letter for mutual exchange of duty should be sent through Heads of the concerned Depts to the principal.</li>
+                            <li style="margin-bottom: 3px;">Mutual exchange is permitted in the same cadre and block transfer of invigilation work is not permitted.</li>
+                            <li style="margin-bottom: 3px;">Deputy Supdts/Relieving Supdts are requested to refer to the circular issued by VTU on the DUTIES and RESPONSIBILITIES and follow the same.</li>
+                        </ol>
+                        <div style="margin-top: 8px; font-style: italic;">Kind cooperation & involvement of every one is solicited for the Smooth conduct of examinations.</div>
+                    </div>
+                    
+                    ${renderTable(deputyList, 'DEPUTY CHIEF SUPERINTENDENTS')}
+                    ${renderTable(invigilatorList, 'FACULTY / INVIGILATORS')}
                 </div>
-                
-                ${renderTable(deputyList, 'DEPUTY CHIEF SUPERINTENDENTS')}
-                ${renderTable(invigilatorList, 'FACULTY / INVIGILATORS')}
             </div>
         `;
     });
@@ -494,6 +523,9 @@ export const generateRoomPDF = (sessionData, customFilename) => {
             });
         });
 
+        // Add watermark to all pages
+        addWatermarkToPDF(doc);
+
         const filename = customFilename || `Room_Allotment_${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(filename);
 
@@ -505,11 +537,9 @@ export const generateRoomPDF = (sessionData, customFilename) => {
 
 export const generateDepartmentPDF = (sessionData, targetDept = null) => {
     try {
-        // 1. Extract all unique dates and sessions
         const dates = Object.keys(sessionData).sort();
         if (dates.length === 0) return;
 
-        // 2. Aggregate data by Department -> Faculty
         const deptData = {};
 
         dates.forEach(date => {
@@ -517,14 +547,12 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
                 const sessionInfo = sessionData[date]?.[session];
                 if (!sessionInfo) return;
 
-                // Helper to process people
                 const processPerson = (person, role) => {
                     if (!person.name || person.name.startsWith('Test Faculty')) return;
 
                     const dept = person.department || person.dept || 'Unknown';
                     if (!deptData[dept]) deptData[dept] = {};
 
-                    // Use Name + Initials as unique key
                     const cleanName = person.name.trim();
                     const cleanInitials = (person.initials || '').trim();
                     const key = `${cleanName}_${cleanInitials}`;
@@ -541,7 +569,6 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
                         deptData[dept][key].isDeputy = true;
                     }
 
-                    // Record duty
                     const duty = person.room || (role === 'Deputy' ? 'Deputy' : 'Invigilator');
                     deptData[dept][key].duties[`${date}_${session}`] = duty;
                 };
@@ -551,7 +578,6 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
             });
         });
 
-        // 3. Generate PDF
         const doc = new jsPDF({ orientation: 'landscape' });
         let isFirstPage = true;
 
@@ -569,7 +595,6 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
             }
             isFirstPage = false;
 
-            // Header
             doc.setFontSize(16);
             doc.setFont('helvetica', 'bold');
             doc.text('SIDDAGANGA INSTITUTE OF TECHNOLOGY, TUMKUR', 148.5, 15, { align: 'center' });
@@ -578,9 +603,8 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
             doc.text('ALLOTMENT OF INVIGILATION DUTY FOR SEMESTER EXAMINATIONS', 148.5, 23, { align: 'center' });
 
             doc.setFontSize(12);
-            doc.text(`${dept.toUpperCase()} - EXAM ALLOTMENT`, 148.5, 30, { align: 'center' }); // Added Underline manually by drawing line if needed, but text is fine.
+            doc.text(`${dept.toUpperCase()} - EXAM ALLOTMENT`, 148.5, 30, { align: 'center' });
 
-            // General Instructions
             doc.setFontSize(10);
             doc.text('General Instructions :', 14, 40);
             doc.setFont('helvetica', 'normal');
@@ -667,6 +691,9 @@ export const generateDepartmentPDF = (sessionData, targetDept = null) => {
             renderTable(deputyList, 'DEPUTY CHIEF SUPERINTENDENTS');
             renderTable(invigilatorList, 'FACULTY / INVIGILATORS');
         });
+
+        // Add watermark to all pages
+        addWatermarkToPDF(doc);
 
         const filename = targetDept
             ? `${targetDept}_Exam_Allotment_${new Date().toISOString().split('T')[0]}.pdf`

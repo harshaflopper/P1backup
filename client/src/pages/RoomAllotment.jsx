@@ -262,30 +262,30 @@ const RoomAllotment = () => {
             <div className="max-w-xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Upload Card */}
                 <div className="bg-retro-white rounded-xl shadow-paper border-2 border-retro-dark overflow-hidden">
-                    <div className="p-6 text-center">
-                        <h3 className="text-xl font-black text-retro-dark mb-1 uppercase tracking-tight">Upload document file</h3>
-                        <p className="text-retro-secondary mb-6 max-w-sm mx-auto font-bold text-xs uppercase tracking-wide">Drag & Drop HTML/DOC file to load session data</p>
+                    {Object.keys(sessionData).length === 0 && (
+                        <div className="p-6 text-center">
+                            <h3 className="text-xl font-black text-retro-dark mb-1 uppercase tracking-tight">Upload document file</h3>
+                            <p className="text-retro-secondary mb-6 max-w-sm mx-auto font-bold text-xs uppercase tracking-wide">Drag & Drop HTML/DOC file to load session data</p>
 
-                        <div className={`relative inline-block w-full max-w-sm group ${Object.keys(sessionData).length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                            <input
-                                type="file"
-                                accept=".html,.htm,.doc,.docx"
-                                onChange={handleFileUpload}
-                                disabled={Object.keys(sessionData).length > 0}
-                                className={`absolute inset-0 w-full h-full opacity-0 z-10 ${Object.keys(sessionData).length > 0 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                            />
-                            <div className={`flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-retro-secondary/30 rounded-xl bg-retro-cream/10 transition-all duration-300 ${Object.keys(sessionData).length === 0 ? 'group-hover:bg-retro-cream/30 group-hover:border-retro-dark hover:shadow-inner' : ''}`}>
-                                <i className={`bi bi-cloud-arrow-up-fill text-3xl text-retro-dark/50 mb-2 transition-all ${Object.keys(sessionData).length === 0 ? 'group-hover:text-retro-dark group-hover:scale-110' : ''}`}></i>
-                                <span className={`text-retro-dark font-black uppercase tracking-wider text-xs transition-transform ${Object.keys(sessionData).length === 0 ? 'group-hover:translate-y-[-1px]' : ''}`}>
-                                    {Object.keys(sessionData).length > 0 ? 'File Loaded' : 'Choose File'}
-                                </span>
+                            <div className="relative inline-block w-full max-w-sm group">
+                                <input
+                                    type="file"
+                                    accept=".html,.htm,.doc,.docx"
+                                    onChange={handleFileUpload}
+                                    className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                                />
+                                <div className="flex flex-col items-center justify-center w-full px-6 py-8 border-2 border-dashed border-retro-secondary/30 rounded-xl bg-retro-cream/10 transition-all duration-300 group-hover:bg-retro-cream/30 group-hover:border-retro-dark hover:shadow-inner">
+                                    <i className="bi bi-cloud-arrow-up-fill text-3xl text-retro-dark/50 mb-2 transition-all group-hover:text-retro-dark group-hover:scale-110"></i>
+                                    <span className="text-retro-dark font-black uppercase tracking-wider text-xs transition-transform group-hover:translate-y-[-1px]">
+                                        Choose File
+                                    </span>
+                                </div>
                             </div>
+                            <p className="text-[9px] text-retro-secondary/70 mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
                         </div>
-                        <p className="text-[9px] text-retro-secondary/70 mt-3 font-bold uppercase tracking-widest">Supported: HTML, DOC</p>
+                    )}
 
-                    </div>
-
-                    <div className="bg-retro-cream/30 px-8 py-6 border-t-2 border-retro-dark flex flex-wrap justify-center gap-4">
+                    <div className={`bg-retro-cream/30 px-8 py-6 flex flex-wrap justify-center gap-4 ${Object.keys(sessionData).length === 0 ? 'border-t-2 border-retro-dark' : ''}`}>
                         <button
                             className="bg-retro-blue hover:bg-retro-blue/90 text-white px-6 py-3 rounded-lg font-black shadow-paper active:translate-y-[0px] hover:translate-y-[-2px] transition-all flex items-center gap-2 border-2 border-retro-dark uppercase tracking-wider text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
                             onClick={handleRandomize}
